@@ -29,11 +29,21 @@ const elements = {
   backToSearchBtn: document.querySelector("#backToSearchBtn"),
   dashboard: document.querySelector("#dashboard"),
   logoutBtn: document.querySelector("#logoutBtn"),
+  logoutBtnTop: document.querySelector("#logoutBtnTop"),
   exportBtn: document.querySelector("#exportBtn"),
+  printLatestBtn: document.querySelector("#printLatestBtn"),
+  printStudentsBtn: document.querySelector("#printStudentsBtn"),
+  printExamsBtn: document.querySelector("#printExamsBtn"),
+  printFilteredBtn: document.querySelector("#printFilteredBtn"),
+  printSelectedStudentBtn: document.querySelector("#printSelectedStudentBtn"),
+  printSelectedExamBtn: document.querySelector("#printSelectedExamBtn"),
+  printStudentSelect: document.querySelector("#printStudentSelect"),
+  printExamSelect: document.querySelector("#printExamSelect"),
   studentForm: document.querySelector("#studentForm"),
   studentAdminRoll: document.querySelector("#studentAdminRoll"),
   studentAdminName: document.querySelector("#studentAdminName"),
   studentAdminBatch: document.querySelector("#studentAdminBatch"),
+  studentExcelFile: document.querySelector("#studentExcelFile"),
   examForm: document.querySelector("#examForm"),
   examName: document.querySelector("#examName"),
   examDate: document.querySelector("#examDate"),
@@ -52,9 +62,14 @@ const elements = {
   computedPreview: document.querySelector("#computedPreview"),
   adminOverview: document.querySelector("#adminOverview"),
   adminFilter: document.querySelector("#adminFilter"),
+  studentFilter: document.querySelector("#studentFilter"),
   examFilter: document.querySelector("#examFilter"),
   resultsBody: document.querySelector("#resultsBody"),
   modeBadge: document.querySelector("#modeBadge"),
+  duplicateModal: document.querySelector("#duplicateModal"),
+  duplicateForm: document.querySelector("#duplicateForm"),
+  cancelDuplicateBtn: document.querySelector("#cancelDuplicateBtn"),
+  confirmDuplicateBtn: document.querySelector("#confirmDuplicateBtn"),
   toast: document.querySelector("#toast")
 };
 
@@ -68,6 +83,10 @@ let results = [];
 let rankedResults = [];
 let editingStudentRoll = null;
 let editingExamId = null;
+let pendingBulkStudents = [];
+let pendingDuplicateGroups = [];
+let lastStudentLatestResult = null;
+let lastStudentRecord = null;
 
 boot();
 
@@ -151,14 +170,16 @@ function bindEvents() {
     button.addEventListener("click", () => showAdminPanel(button.dataset.panel));
   });
 
-  elements.logoutBtn.addEventListener("click", async () => {
+  const handleLogout = async () => {
     if (firebaseReady) {
       await firebaseApi.signOut(auth);
     }
     setAdminState(false);
     showStudentPortal();
     showToast("Logged out.");
-  });
+  };
+  elements.logoutBtn.addEventListener("click", handleLogout);
+  elements.logoutBtnTop.addEventListener("click", handleLogout);
 
   elements.studentForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -174,6 +195,10 @@ function bindEvents() {
     await loadData();
     showToast("Student saved.");
   });
+
+  elements.studentExcelFile.addEventListener("change", handleStudentExcelUpload);
+  elements.cancelDuplicateBtn.addEventListener("click", closeDuplicateModal);
+  elements.confirmDuplicateBtn.addEventListener("click", importSelectedBulkStudents);
 
   elements.examForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -214,8 +239,15 @@ function bindEvents() {
     updateResultPreview();
   });
   elements.adminFilter.addEventListener("input", renderAdminRows);
+  elements.studentFilter.addEventListener("change", renderAdminRows);
   elements.examFilter.addEventListener("change", renderAdminRows);
   elements.exportBtn.addEventListener("click", exportCsv);
+  elements.printLatestBtn.addEventListener("click", printLatestAdminResults);
+  elements.printStudentsBtn.addEventListener("click", printStudentWiseResults);
+  elements.printExamsBtn.addEventListener("click", printExamWiseResults);
+  elements.printFilteredBtn.addEventListener("click", printFilteredAdminResults);
+  elements.printSelectedStudentBtn.addEventListener("click", printSelectedStudentResult);
+  elements.printSelectedExamBtn.addEventListener("click", printSelectedExamResult);
 }
 
 function showAdminPanel(panelName) {
@@ -231,6 +263,9 @@ function openAdminPanel() {
   elements.studentView.classList.add("hidden");
   elements.adminView.classList.remove("hidden");
   elements.resultArea.classList.add("hidden");
+  elements.adminEmail.value = "";
+  elements.adminPassword.value = "";
+  elements.adminEmail.focus();
 }
 
 function showStudentPortal() {
@@ -345,6 +380,7 @@ async function loadData() {
   exams = exams.sort((a, b) => new Date(b.date) - new Date(a.date));
   rankedResults = buildRankedResults();
   renderExamOptions();
+  renderStudentOptions();
   renderStudentRows();
   renderExamRows();
   renderAdminOverview();
@@ -377,6 +413,160 @@ async function deleteStudent(roll, deleteRelatedResults = true) {
     local.results = local.results.filter((item) => item.roll !== roll);
   }
   setLocalData(local);
+}
+
+async function handleStudentExcelUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!window.XLSX) {
+    showToast("Excel parser could not load. Please check internet connection and try again.");
+    event.target.value = "";
+    return;
+  }
+
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = window.XLSX.read(buffer, { type: "array" });
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = window.XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
+    const imported = parseStudentRows(rows);
+    if (!imported.length) {
+      showToast("No valid student rows found. Use columns: Roll, Name, Batch.");
+      event.target.value = "";
+      return;
+    }
+    await prepareBulkStudentImport(imported);
+  } catch (error) {
+    showToast(`Excel upload failed: ${error.message}`);
+  } finally {
+    event.target.value = "";
+  }
+}
+
+function parseStudentRows(rows) {
+  if (!rows.length) return [];
+  const header = rows[0].map((cell) => String(cell).trim().toLowerCase());
+  const hasHeader = header.some((cell) => ["roll", "roll number", "student roll", "name", "student name", "batch"].includes(cell));
+  const rollIndex = hasHeader ? findHeaderIndex(header, ["roll", "roll number", "student roll"]) : 0;
+  const nameIndex = hasHeader ? findHeaderIndex(header, ["name", "student name"]) : 1;
+  const batchIndex = hasHeader ? findHeaderIndex(header, ["batch", "class", "section"]) : 2;
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+
+  return dataRows
+    .map((row, index) => {
+      const roll = normalizeRoll(row[rollIndex]);
+      const name = String(row[nameIndex] || "").trim();
+      const batch = String(row[batchIndex] || "").trim();
+      if (!isValidRoll(roll) || !name || !batch || roll === ADMIN_TRIGGER_ROLL) return null;
+      return {
+        id: `upload-${index}-${roll}`,
+        roll,
+        name,
+        batch,
+        source: `Excel row ${hasHeader ? index + 2 : index + 1}`,
+        updatedAt: new Date().toISOString()
+      };
+    })
+    .filter(Boolean);
+}
+
+function findHeaderIndex(header, names) {
+  const index = header.findIndex((cell) => names.includes(cell));
+  return index === -1 ? 0 : index;
+}
+
+function normalizeRoll(value) {
+  const digits = String(value ?? "").trim().replace(/\.0$/, "").replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.length <= 6 ? digits.padStart(6, "0") : digits;
+}
+
+async function prepareBulkStudentImport(importedStudents) {
+  const byRoll = new Map();
+  importedStudents.forEach((student) => {
+    if (!byRoll.has(student.roll)) byRoll.set(student.roll, []);
+    byRoll.get(student.roll).push(student);
+  });
+
+  const ready = [];
+  const duplicateGroups = [];
+
+  byRoll.forEach((incoming, roll) => {
+    const existing = findStudent(roll);
+    const candidates = [];
+    if (existing) {
+      candidates.push({ ...existing, id: `existing-${roll}`, source: "Current saved record" });
+    }
+    candidates.push(...incoming);
+
+    if (candidates.length > 1) {
+      duplicateGroups.push({ roll, candidates });
+    } else {
+      ready.push(stripBulkMeta(candidates[0]));
+    }
+  });
+
+  pendingBulkStudents = ready;
+  pendingDuplicateGroups = duplicateGroups;
+
+  if (duplicateGroups.length) {
+    renderDuplicateModal();
+    return;
+  }
+
+  await saveBulkStudents(ready);
+}
+
+function renderDuplicateModal() {
+  elements.duplicateForm.innerHTML = pendingDuplicateGroups.map((group) => `
+    <div class="duplicate-group">
+      <h3>Roll ${escapeHtml(group.roll)}</h3>
+      ${group.candidates.map((candidate, index) => `
+        <label class="duplicate-choice">
+          <input type="radio" name="roll-${escapeHtml(group.roll)}" value="${escapeHtml(candidate.id)}" ${index === group.candidates.length - 1 ? "checked" : ""} />
+          <span>
+            <b>${escapeHtml(candidate.name)}</b>
+            Roll: ${escapeHtml(candidate.roll)} | Batch: ${escapeHtml(candidate.batch)}<br />
+            Source: ${escapeHtml(candidate.source)}
+          </span>
+        </label>
+      `).join("")}
+    </div>
+  `).join("");
+  elements.duplicateModal.classList.remove("hidden");
+}
+
+async function importSelectedBulkStudents() {
+  const selected = [];
+  pendingDuplicateGroups.forEach((group) => {
+    const checked = elements.duplicateForm.querySelector(`input[name="roll-${CSS.escape(group.roll)}"]:checked`);
+    const candidate = group.candidates.find((item) => item.id === checked?.value);
+    if (candidate) selected.push(stripBulkMeta(candidate));
+  });
+  await saveBulkStudents([...pendingBulkStudents, ...selected]);
+  closeDuplicateModal();
+}
+
+async function saveBulkStudents(items) {
+  await Promise.all(items.map((student) => saveStudent(student)));
+  await loadData();
+  showToast(`${items.length} student${items.length === 1 ? "" : "s"} imported.`);
+}
+
+function stripBulkMeta(student) {
+  return {
+    roll: student.roll,
+    name: student.name,
+    batch: student.batch,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function closeDuplicateModal() {
+  elements.duplicateModal.classList.add("hidden");
+  elements.duplicateForm.innerHTML = "";
+  pendingBulkStudents = [];
+  pendingDuplicateGroups = [];
 }
 
 async function saveExam(exam) {
@@ -510,6 +700,8 @@ function renderStudentPortal(roll) {
     .sort((a, b) => new Date(b.examDate) - new Date(a.examDate));
 
   elements.resultArea.classList.remove("hidden");
+  lastStudentRecord = student || null;
+  lastStudentLatestResult = null;
 
   if (!student) {
     elements.latestResultCard.innerHTML = `
@@ -533,6 +725,7 @@ function renderStudentPortal(roll) {
   }
 
   const latest = publishedResults[0];
+  lastStudentLatestResult = latest;
   const overall = buildOverallRows(rankedResults.filter((item) => item.published && !item.isExpelled)).find((item) => item.roll === roll);
   const overallSummary = overall
     ? `
@@ -541,7 +734,7 @@ function renderStudentPortal(roll) {
       <div class="metric-grid">
         ${metric("Exam Count", overall.examCount)}
         ${metric("Average", `${overall.average.toFixed(2)}%`)}
-        ${metric("Overall GPA", percentageToGpa(overall.average).toFixed(2))}
+        ${metric("Overall GPA", formatGpa(percentageToGpa(overall.average)))}
         ${metric("Status", overall.average >= 33 ? "Passed" : "Needs Improvement")}
       </div>
     `
@@ -562,7 +755,7 @@ function renderStudentPortal(roll) {
     `
     : `
       ${metric("Merit Position", ordinal(latest.examMerit))}
-      ${metric("GPA", latest.gpa.toFixed(2))}
+      ${metric("GPA", formatGpa(latest.gpa))}
       ${metric("Grade", latest.grade)}
       ${metric("Percentage", `${latest.percentage.toFixed(2)}%`)}
     `;
@@ -579,7 +772,9 @@ function renderStudentPortal(roll) {
     <div class="metric-grid">
       ${latestMetrics}
     </div>
+    <button class="ghost-btn print-inline-btn" type="button" id="printStudentLatestBtn">Print Latest Result</button>
   `;
+  document.querySelector("#printStudentLatestBtn").addEventListener("click", printStudentLatestResult);
 
   elements.overallCard.innerHTML = overallSummary;
 
@@ -588,7 +783,7 @@ function renderStudentPortal(roll) {
       <td data-label="Exam">${escapeHtml(item.examName)}</td>
       <td data-label="Date">${formatDate(item.examDate)}</td>
       <td data-label="Marks">${item.isExpelled ? "Expelled" : `${item.obtained}/${item.fullMarks} (${item.percentage.toFixed(2)}%)`}</td>
-      <td data-label="GPA">${item.isExpelled ? "Expelled" : `${item.gpa.toFixed(2)} (${item.grade})`}</td>
+      <td data-label="GPA">${item.isExpelled ? "Expelled" : `${formatGpa(item.gpa)} (${item.grade})`}</td>
       <td data-label="Merit">${item.isExpelled ? "-" : ordinal(item.examMerit)}</td>
     </tr>
   `).join("");
@@ -601,6 +796,16 @@ function renderExamOptions() {
 
   elements.resultExam.innerHTML = options || `<option value="">No exam created</option>`;
   elements.examFilter.innerHTML = `<option value="">All exams</option>${options}`;
+  elements.printExamSelect.innerHTML = options || `<option value="">No exam created</option>`;
+}
+
+function renderStudentOptions() {
+  const options = students.map((student) => (
+    `<option value="${escapeHtml(student.roll)}">${escapeHtml(student.roll)} - ${escapeHtml(student.name)}</option>`
+  )).join("");
+
+  elements.studentFilter.innerHTML = `<option value="">All students</option>${options}`;
+  elements.printStudentSelect.innerHTML = options || `<option value="">No student found</option>`;
 }
 
 function renderStudentRows() {
@@ -729,12 +934,7 @@ function renderAdminOverview() {
 }
 
 function renderAdminRows() {
-  const filter = elements.adminFilter.value.trim().toLowerCase();
-  const examFilter = elements.examFilter.value;
-  const rows = rankedResults.filter((item) => {
-    const searchable = [item.roll, item.studentName, item.batch, item.examName].join(" ").toLowerCase();
-    return searchable.includes(filter) && (!examFilter || item.examId === examFilter);
-  });
+  const rows = getFilteredAdminRows();
 
   if (!rows.length) {
     elements.resultsBody.innerHTML = `<tr><td data-label="Status" colspan="8">No result found.</td></tr>`;
@@ -748,7 +948,7 @@ function renderAdminRows() {
       <td data-label="Batch">${escapeHtml(item.batch)}</td>
       <td data-label="Exam">${escapeHtml(item.examName)}${item.published ? "" : " (Draft)"}</td>
       <td data-label="Marks">${item.isExpelled ? "Expelled" : `${item.obtained}/${item.fullMarks} (${item.percentage.toFixed(2)}%)`}</td>
-      <td data-label="GPA">${item.isExpelled ? "Expelled" : `${item.gpa.toFixed(2)} (${item.grade})`}</td>
+      <td data-label="GPA">${item.isExpelled ? "Expelled" : `${formatGpa(item.gpa)} (${item.grade})`}</td>
       <td data-label="Merit">${item.isExpelled ? "-" : ordinal(item.examMerit)}</td>
       <td data-label="Action">
         <div class="action-row">
@@ -772,6 +972,18 @@ function renderAdminRows() {
   });
 }
 
+function getFilteredAdminRows() {
+  const filter = elements.adminFilter.value.trim().toLowerCase();
+  const studentFilter = elements.studentFilter.value;
+  const examFilter = elements.examFilter.value;
+  return rankedResults.filter((item) => {
+    const searchable = [item.roll, item.studentName, item.batch, item.examName].join(" ").toLowerCase();
+    return searchable.includes(filter)
+      && (!studentFilter || item.roll === studentFilter)
+      && (!examFilter || item.examId === examFilter);
+  });
+}
+
 function fillResultForm(id) {
   const item = rankedResults.find((result) => result.id === id);
   if (!item) return;
@@ -783,6 +995,236 @@ function fillResultForm(id) {
   elements.obtainedMarks.disabled = item.isExpelled;
   updateResultPreview();
   showToast("Result loaded for editing.");
+}
+
+function printStudentLatestResult() {
+  if (!lastStudentLatestResult || !lastStudentRecord) {
+    showToast("No latest result is available to print.");
+    return;
+  }
+  printReport(
+    `${lastStudentRecord.name} - Latest Result`,
+    [
+      {
+        heading: "Latest Published Result",
+        meta: `Roll: ${lastStudentRecord.roll} | Batch: ${lastStudentRecord.batch}`,
+        rows: [lastStudentLatestResult]
+      }
+    ]
+  );
+}
+
+function printLatestAdminResults() {
+  const latestExam = exams[0];
+  if (!latestExam) {
+    showToast("No exam is available to print.");
+    return;
+  }
+  const rows = rankedResults
+    .filter((item) => item.examId === latestExam.id)
+    .sort((a, b) => (a.examMerit || 9999) - (b.examMerit || 9999) || a.roll.localeCompare(b.roll));
+  printReport("Latest Exam Results", [
+    {
+      heading: `${latestExam.name} (${formatDate(latestExam.date)})`,
+      meta: `Status: ${latestExam.published ? "Published" : "Unpublished"} | Full Marks: ${latestExam.fullMarks}`,
+      rows
+    }
+  ]);
+}
+
+function printStudentWiseResults() {
+  const sections = students.map((student) => ({
+    heading: `${student.name} (${student.roll})`,
+    meta: `Batch: ${student.batch}`,
+    rows: rankedResults
+      .filter((item) => item.roll === student.roll)
+      .sort((a, b) => new Date(b.examDate) - new Date(a.examDate))
+  }));
+  printReport("Student Wise All Results", sections);
+}
+
+function printSelectedStudentResult() {
+  const roll = elements.printStudentSelect.value;
+  const student = findStudent(roll);
+  if (!student) {
+    showToast("Please select a student to print.");
+    return;
+  }
+  printReport(`${student.name} - All Results`, [
+    {
+      heading: `${student.name} (${student.roll})`,
+      meta: `Batch: ${student.batch}`,
+      rows: rankedResults
+        .filter((item) => item.roll === student.roll)
+        .sort((a, b) => new Date(b.examDate) - new Date(a.examDate))
+    }
+  ]);
+}
+
+function printExamWiseResults() {
+  const sections = exams.map((exam) => ({
+    heading: `${exam.name} (${formatDate(exam.date)})`,
+    meta: `Status: ${exam.published ? "Published" : "Unpublished"} | Full Marks: ${exam.fullMarks}`,
+    rows: rankedResults
+      .filter((item) => item.examId === exam.id)
+      .sort((a, b) => (a.examMerit || 9999) - (b.examMerit || 9999) || a.roll.localeCompare(b.roll))
+  }));
+  printReport("Exam Wise All Results", sections);
+}
+
+function printSelectedExamResult() {
+  const exam = findExam(elements.printExamSelect.value);
+  if (!exam) {
+    showToast("Please select an exam to print.");
+    return;
+  }
+  printReport(`${exam.name} - All Results`, [
+    {
+      heading: `${exam.name} (${formatDate(exam.date)})`,
+      meta: `Status: ${exam.published ? "Published" : "Unpublished"} | Full Marks: ${exam.fullMarks}`,
+      rows: rankedResults
+        .filter((item) => item.examId === exam.id)
+        .sort((a, b) => (a.examMerit || 9999) - (b.examMerit || 9999) || a.roll.localeCompare(b.roll))
+    }
+  ]);
+}
+
+function printFilteredAdminResults() {
+  printReport("Filtered Result Report", [
+    {
+      heading: "Current Filtered Results",
+      meta: `Text: ${elements.adminFilter.value.trim() || "None"} | Student: ${elements.studentFilter.options[elements.studentFilter.selectedIndex]?.text || "All students"} | Exam: ${elements.examFilter.options[elements.examFilter.selectedIndex]?.text || "All exams"}`,
+      rows: getFilteredAdminRows()
+    }
+  ]);
+}
+
+function printReport(title, sections) {
+  const printableSections = sections.filter((section) => section.rows.length);
+  if (!printableSections.length) {
+    showToast("No result data is available to print.");
+    return;
+  }
+
+  const html = `
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${escapeHtml(title)}</title>
+        <style>
+          @page { size: A4; margin: 16mm; }
+          body { font-family: Arial, sans-serif; color: #14201b; margin: 0; padding-bottom: 18mm; }
+          .header { border-bottom: 3px solid #13724a; padding-bottom: 12px; margin-bottom: 18px; }
+          h1 { margin: 0 0 6px; font-size: 26px; }
+          h2 { margin: 22px 0 4px; color: #13724a; font-size: 18px; }
+          p { margin: 0 0 8px; color: #607069; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: auto; }
+          th, td { border: 1px solid #d8e0dc; padding: 8px; text-align: left; font-size: 12px; }
+          th { background: #eef5f1; color: #14201b; }
+          tr { page-break-inside: avoid; page-break-after: auto; }
+          .credit { margin-top: 26px; padding-top: 10px; border-top: 1px solid #d8e0dc; color: #607069; text-align: center; }
+          .credit a { color: #13724a; font-weight: 700; text-decoration: none; }
+          @media print {
+            button { display: none; }
+            .credit {
+              position: fixed;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              margin: 0;
+              padding-top: 8px;
+              background: #fff;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Ideal Coaching Centre</h1>
+          <p>${escapeHtml(title)} | Generated ${escapeHtml(new Date().toLocaleString())}</p>
+        </div>
+        ${printableSections.map((section) => `
+          <section>
+            <h2>${escapeHtml(section.heading)}</h2>
+            <p>${escapeHtml(section.meta || "")}</p>
+            ${resultRowsTable(section.rows)}
+          </section>
+        `).join("")}
+        ${gradingScaleHtml()}
+        <div class="credit">Developed by: <a href="https://sites.google.com/view/shad-s-pw">Shahrim Ahammed Shad</a></div>
+        <script>window.addEventListener("load", () => window.print());</script>
+      </body>
+    </html>
+  `;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showToast("Popup blocked. Please allow popups to print or save PDF.");
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
+}
+
+function resultRowsTable(rows) {
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Roll</th>
+          <th>Name</th>
+          <th>Batch</th>
+          <th>Exam</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Marks</th>
+          <th>GPA</th>
+          <th>Grade</th>
+          <th>Merit</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((item) => `
+          <tr>
+            <td>${escapeHtml(item.roll)}</td>
+            <td>${escapeHtml(item.studentName)}</td>
+            <td>${escapeHtml(item.batch)}</td>
+            <td>${escapeHtml(item.examName)}${item.published ? "" : " (Unpublished)"}</td>
+            <td>${formatDate(item.examDate)}</td>
+            <td>${item.isExpelled ? "Expelled" : "Regular"}</td>
+            <td>${item.isExpelled ? "Expelled" : `${item.obtained}/${item.fullMarks} (${item.percentage.toFixed(2)}%)`}</td>
+            <td>${item.isExpelled ? "-" : formatGpa(item.gpa)}</td>
+            <td>${escapeHtml(item.grade)}</td>
+            <td>${item.isExpelled ? "-" : ordinal(item.examMerit)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function gradingScaleHtml() {
+  return `
+    <section>
+      <h2>GPA Scale</h2>
+      <table>
+        <thead>
+          <tr><th>Marks</th><th>Grade</th><th>GPA</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>80 - 100</td><td>A+</td><td>5.00</td></tr>
+          <tr><td>70 - 79</td><td>A</td><td>4.00</td></tr>
+          <tr><td>60 - 69</td><td>A−</td><td>3.50</td></tr>
+          <tr><td>50 - 59</td><td>B</td><td>3.00</td></tr>
+          <tr><td>40 - 49</td><td>C</td><td>2.00</td></tr>
+          <tr><td>33 - 39</td><td>D</td><td>1.00</td></tr>
+          <tr><td>0 - 32</td><td>F</td><td>0.00 (Fail)</td></tr>
+        </tbody>
+      </table>
+    </section>
+  `;
 }
 
 function updateResultPreview() {
@@ -804,13 +1246,13 @@ function updateResultPreview() {
 
   const percentage = (obtained / exam.fullMarks) * 100;
   const gpa = percentageToGpa(percentage);
-  const examRows = rankedResults.filter((item) => item.examId === exam.id && item.roll !== roll);
+  const examRows = rankedResults.filter((item) => item.examId === exam.id && item.roll !== roll && !item.isExpelled);
   examRows.push({ roll, percentage });
   examRows.sort((a, b) => b.percentage - a.percentage || a.roll.localeCompare(b.roll));
   assignMerit(examRows, "examMerit", "percentage");
   const preview = examRows.find((item) => item.roll === roll);
 
-  elements.computedPreview.textContent = `${student.name} | ${percentage.toFixed(2)}% | GPA ${gpa.toFixed(2)} | Estimated merit ${ordinal(preview.examMerit)}`;
+  elements.computedPreview.textContent = `${student.name} | ${percentage.toFixed(2)}% | GPA ${formatGpa(gpa)} | Estimated merit ${ordinal(preview.examMerit)}`;
 }
 
 function exportCsv() {
@@ -825,7 +1267,7 @@ function exportCsv() {
     item.obtained,
     item.fullMarks,
     item.isExpelled ? "" : item.percentage.toFixed(2),
-    item.isExpelled ? "" : item.gpa.toFixed(2),
+    item.isExpelled ? "" : formatGpa(item.gpa),
     item.grade,
     item.isExpelled ? "" : item.examMerit
   ]);
@@ -854,18 +1296,27 @@ function createExamId(name, date) {
 }
 
 function percentageToGpa(percentage) {
-  if (percentage < 33) return 0;
-  return Math.min(5, percentage / 20);
+  if (percentage >= 80) return 5;
+  if (percentage >= 70) return 4;
+  if (percentage >= 60) return 3.5;
+  if (percentage >= 50) return 3;
+  if (percentage >= 40) return 2;
+  if (percentage >= 33) return 1;
+  return 0;
 }
 
 function percentageToGrade(percentage) {
   if (percentage >= 80) return "A+";
   if (percentage >= 70) return "A";
-  if (percentage >= 60) return "A-";
+  if (percentage >= 60) return "A−";
   if (percentage >= 50) return "B";
   if (percentage >= 40) return "C";
   if (percentage >= 33) return "D";
   return "F";
+}
+
+function formatGpa(value) {
+  return Number(value || 0).toFixed(2);
 }
 
 function metric(label, value) {

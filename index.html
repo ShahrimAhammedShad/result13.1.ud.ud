@@ -7,7 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260616-2" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   </head>
   <body>
     <div class="app-shell">
@@ -73,17 +74,21 @@
               <h2>Manage students, exams, and results.</h2>
               <p>This panel is opened only through the protected roll shortcut. Sign in to publish result data to Firebase.</p>
             </div>
-            <form id="loginForm" class="login-form">
+            <form id="loginForm" class="login-form" autocomplete="off">
               <label for="adminEmail">Email</label>
-              <input id="adminEmail" type="email" value="admin@coaching.local" required />
+              <input id="adminEmail" type="email" autocomplete="off" required />
               <label for="adminPassword">Password</label>
-              <input id="adminPassword" type="password" value="752002" required />
+              <input id="adminPassword" type="password" autocomplete="new-password" required />
               <button type="submit">Login</button>
               <button class="ghost-btn" type="button" id="backToSearchBtn">Back to Search</button>
             </form>
           </div>
 
           <div class="dashboard hidden" id="dashboard">
+            <div class="admin-session-bar">
+              <span>Admin logged in</span>
+              <button class="ghost-btn" type="button" id="logoutBtnTop">Logout</button>
+            </div>
             <div class="dashboard-head">
               <div>
                 <p class="eyebrow">Admin dashboard</p>
@@ -96,6 +101,32 @@
             </div>
 
             <section class="stat-grid" id="adminOverview"></section>
+
+            <section class="print-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">Print or PDF</p>
+                  <h3>Choose exactly what you want to print</h3>
+                </div>
+              </div>
+              <div class="print-grid">
+                <label>
+                  Student
+                  <select id="printStudentSelect"></select>
+                </label>
+                <label>
+                  Exam
+                  <select id="printExamSelect"></select>
+                </label>
+                <button class="ghost-btn" type="button" id="printSelectedStudentBtn">Print Selected Student</button>
+                <button class="ghost-btn" type="button" id="printSelectedExamBtn">Print Selected Exam</button>
+                <button class="ghost-btn" type="button" id="printLatestBtn">Print Latest Exam</button>
+                <button class="ghost-btn" type="button" id="printFilteredBtn">Print Current Filter</button>
+                <button class="ghost-btn" type="button" id="printStudentsBtn">Print All Students</button>
+                <button class="ghost-btn" type="button" id="printExamsBtn">Print All Exams</button>
+              </div>
+              <p class="form-hint">Use the browser print dialog to print or choose Save as PDF.</p>
+            </section>
 
             <div class="quick-actions" role="group" aria-label="Admin actions">
               <button class="action-tab active" type="button" data-panel="resultPanel">Input Result</button>
@@ -124,6 +155,11 @@
                   <input id="studentAdminBatch" type="text" placeholder="Class 9 - Batch A" required />
                 </label>
                 <button type="submit">Save Student</button>
+                <div class="bulk-upload-box">
+                  <label for="studentExcelFile">Bulk Upload From Excel</label>
+                  <input id="studentExcelFile" type="file" accept=".xlsx,.xls,.csv" />
+                  <p class="form-hint">Columns: Roll, Name, Batch. Duplicate rolls will open a selection box.</p>
+                </div>
                 <div class="table-wrap compact-table">
                   <table>
                     <thead>
@@ -218,6 +254,7 @@
 
             <div class="table-tools">
               <input id="adminFilter" type="search" placeholder="Search roll, name, exam, batch..." />
+              <select id="studentFilter"></select>
               <select id="examFilter"></select>
             </div>
 
@@ -243,7 +280,28 @@
       </main>
     </div>
 
+    <footer class="developer-credit">
+      <span>Developed by:</span>
+      <a href="https://sites.google.com/view/shad-s-pw" target="_blank" rel="noopener">Shahrim Ahammed Shad</a>
+    </footer>
+
+    <div class="modal-backdrop hidden" id="duplicateModal">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="duplicateTitle">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Duplicate roll found</p>
+            <h3 id="duplicateTitle">Choose Which Student Information To Keep</h3>
+          </div>
+        </div>
+        <form id="duplicateForm" class="duplicate-form"></form>
+        <div class="modal-actions">
+          <button class="ghost-btn" type="button" id="cancelDuplicateBtn">Cancel</button>
+          <button class="primary-btn" type="button" id="confirmDuplicateBtn">Import Selected</button>
+        </div>
+      </div>
+    </div>
+
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="./app.js?v=20260616-2"></script>
   </body>
 </html>
