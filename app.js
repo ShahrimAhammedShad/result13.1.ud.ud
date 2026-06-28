@@ -636,7 +636,6 @@ function buildRankedResults() {
         percentage,
         gpa: isExpelled ? null : percentageToGpa(percentage),
         grade: isExpelled ? "Expelled" : percentageToGrade(percentage)
-        grade: isRoll Number Error ? "Roll Number Error" : percentageToGrade(percentage)
       };
     })
     .filter(Boolean);
