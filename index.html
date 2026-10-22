@@ -1,0 +1,2100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ideal Coaching Centre | Professional Result Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+      :root {
+        --bg: #f1f5f9;
+        --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e0f2fe 50%, #f0fdf4 100%);
+        --surface: #ffffff;
+        --surface-glass: rgba(255, 255, 255, 0.75);
+        --ink: #0f172a;
+        --ink-secondary: #334155;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --line-strong: #cbd5e1;
+        --primary: #059669;
+        --primary-hover: #047857;
+        --primary-light: #d1fae5;
+        --primary-soft: rgba(5, 150, 105, 0.08);
+        --accent: #0ea5e9;
+        --accent-light: #e0f2fe;
+        --danger: #dc2626;
+        --danger-light: #fee2e2;
+        --warning: #f59e0b;
+        --warning-light: #fef3c7;
+        --gold: #d97706;
+        --purple: #7c3aed;
+        --purple-light: #ede9fe;
+        --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+        --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.07);
+        --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+        --shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+        --radius-sm: 6px;
+        --radius: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: var(--ink);
+        background: var(--bg-gradient);
+        background-attachment: fixed;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: 
+          radial-gradient(circle at 20% 30%, rgba(5, 150, 105, 0.04) 0%, transparent 50%),
+          radial-gradient(circle at 80% 70%, rgba(14, 165, 233, 0.04) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      button, input, select { font: inherit; }
+      button { border: 0; cursor: pointer; transition: var(--transition); }
+      button:active { transform: scale(0.97); }
+
+      .app-shell { 
+        width: min(1320px, calc(100% - 32px)); 
+        margin: 0 auto; 
+        padding: 32px 0 80px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .loading-overlay {
+        position: fixed; inset: 0; z-index: 9999; 
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(12px); 
+        display: grid; place-items: center;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s;
+      }
+      .loading-overlay.show { opacity: 1; pointer-events: all; }
+      .spinner {
+        width: 56px; height: 56px; 
+        border: 4px solid var(--line);
+        border-top-color: var(--primary); 
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        margin-bottom: 36px; padding: 20px 28px; 
+        background: var(--surface-glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: var(--radius-xl); 
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        transition: var(--transition);
+      }
+      .topbar:hover { box-shadow: var(--shadow-xl); }
+      .brand { display: flex; align-items: center; gap: 16px; }
+      .brand-icon {
+        width: 52px; height: 52px; border-radius: var(--radius);
+        background: linear-gradient(135deg, #059669 0%, #10b981 50%, #0ea5e9 100%);
+        display: grid; place-items: center; color: white; 
+        font-weight: 900; font-size: 1.3rem;
+        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+      }
+      .brand-icon::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+        animation: shine 3s infinite;
+      }
+      @keyframes shine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      .brand-icon:hover { transform: rotate(5deg) scale(1.05); }
+      .brand-text h1 { 
+        font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; 
+        color: var(--ink); line-height: 1.2;
+        background: linear-gradient(135deg, var(--ink) 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .brand-text p { 
+        font-size: 0.8rem; color: var(--primary); font-weight: 700; 
+        text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; 
+      }
+
+      .mode-badge {
+        padding: 8px 16px; border-radius: 99px; font-size: 0.8rem; font-weight: 700;
+        background: var(--warning-light); color: var(--gold); border: 1.5px solid var(--warning);
+        display: flex; align-items: center; gap: 6px; transition: var(--transition);
+      }
+      .mode-badge::before { 
+        content: ""; width: 8px; height: 8px; border-radius: 50%; 
+        background: currentColor; animation: pulse 2s infinite; 
+      }
+      @keyframes pulse { 
+        0%, 100% { opacity: 1; transform: scale(1); } 
+        50% { opacity: 0.5; transform: scale(1.3); } 
+      }
+
+      .grid-2 { display: grid; grid-template-columns: 400px 1fr; gap: 28px; align-items: start; }
+      .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+      .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+      .card {
+        background: var(--surface); 
+        border: 1px solid var(--line); 
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md); 
+        transition: var(--transition); 
+        overflow: hidden;
+        animation: slideUp 0.5s ease-out;
+      }
+      @keyframes slideUp { 
+        from { opacity: 0; transform: translateY(20px); } 
+        to { opacity: 1; transform: translateY(0); } 
+      }
+      .card:hover { box-shadow: var(--shadow-xl); transform: translateY(-3px); }
+      .card-header { 
+        padding: 20px 24px; border-bottom: 1px solid var(--line); 
+        background: linear-gradient(180deg, var(--surface) 0%, #fafbfc 100%);
+      }
+      .card-body { padding: 24px; }
+      .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; color: var(--ink); }
+      .card-subtitle { font-size: 0.85rem; color: var(--muted); }
+
+      .card-accent { border-top: 4px solid var(--primary); }
+      .card-accent-blue { border-top: 4px solid var(--accent); }
+
+      .hero-panel {
+        background: linear-gradient(135deg, #064e3b 0%, #059669 40%, #0ea5e9 100%);
+        color: white; border-radius: var(--radius-xl); padding: 40px;
+        box-shadow: var(--shadow-2xl); position: relative; overflow: hidden;
+        animation: slideUp 0.6s ease-out 0.1s both;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .hero-panel::before {
+        content: ""; position: absolute; top: -50%; right: -20%; width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        border-radius: 50%; animation: float 8s ease-in-out infinite;
+      }
+      .hero-panel::after {
+        content: ""; position: absolute; bottom: -30%; left: -10%; width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%; animation: float 6s ease-in-out infinite reverse;
+      }
+      @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-30px) rotate(5deg); } }
+      .hero-panel h2 { 
+        font-size: 1.9rem; font-weight: 800; margin-bottom: 14px; 
+        position: relative; z-index: 1; letter-spacing: -0.02em; 
+      }
+      .hero-panel p { opacity: 0.95; position: relative; z-index: 1; font-size: 1rem; line-height: 1.7; }
+
+      label { 
+        display: block; font-size: 0.875rem; font-weight: 600; 
+        margin-bottom: 8px; color: var(--ink-secondary); 
+      }
+      input, select {
+        width: 100%; min-height: 48px; padding: 0 16px; 
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius); 
+        background: var(--surface); color: var(--ink); outline: none;
+        transition: var(--transition); font-size: 0.95rem;
+      }
+      input:hover, select:hover { border-color: var(--line-strong); }
+      input:focus, select:focus { 
+        border-color: var(--primary); 
+        box-shadow: 0 0 0 4px var(--primary-soft); 
+        transform: translateY(-1px); 
+      }
+      input[readonly] { background: var(--bg); color: var(--muted); cursor: not-allowed; }
+
+      .inline-form { display: grid; grid-template-columns: 1fr auto; gap: 12px; margin-top: 10px; }
+
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        min-height: 48px; padding: 0 24px; border-radius: var(--radius); 
+        font-weight: 600; font-size: 0.95rem;
+        transition: var(--transition); border: 1.5px solid transparent; 
+        position: relative; overflow: hidden;
+      }
+      .btn::before {
+        content: ""; position: absolute; inset: 0; 
+        background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+        transform: translateX(-100%); transition: transform 0.4s;
+      }
+      .btn:hover::before { transform: translateX(0); }
+      .btn-primary { 
+        background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%); 
+        color: white; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3); 
+      }
+      .btn-primary:hover { 
+        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4); 
+        transform: translateY(-2px); 
+      }
+      .btn-secondary { 
+        background: var(--surface); color: var(--ink); border-color: var(--line); 
+      }
+      .btn-secondary:hover { 
+        border-color: var(--primary); color: var(--primary); 
+        background: var(--primary-soft); transform: translateY(-2px); 
+      }
+      .btn-danger { 
+        background: linear-gradient(135deg, var(--danger) 0%, #ef4444 100%); 
+        color: white; 
+      }
+      .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3); }
+      .btn-warning {
+        background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%);
+        color: white;
+      }
+      .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3); }
+      .btn-sm { min-height: 36px; padding: 0 14px; font-size: 0.85rem; border-radius: var(--radius-sm); }
+
+      .stat-box {
+        padding: 24px; border-radius: var(--radius-xl); 
+        background: var(--surface);
+        border: 1px solid var(--line); text-align: center; 
+        transition: var(--transition);
+        position: relative; overflow: hidden; 
+        animation: slideUp 0.5s ease-out;
+      }
+      .stat-box::before {
+        content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent), var(--purple));
+        transform: scaleX(0); transition: transform 0.5s;
+        transform-origin: left;
+      }
+      .stat-box:hover::before { transform: scaleX(1); }
+      .stat-box:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); }
+      .stat-box .value { 
+        font-size: 2.1rem; font-weight: 800; color: var(--ink); 
+        margin-bottom: 6px; letter-spacing: -0.02em; 
+        background: linear-gradient(135deg, var(--ink) 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .stat-box .label { 
+        font-size: 0.8rem; font-weight: 600; color: var(--muted); 
+        text-transform: uppercase; letter-spacing: 0.08em; 
+      }
+
+      .result-header {
+        display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; 
+        margin-bottom: 28px; padding-bottom: 28px; border-bottom: 2px dashed var(--line);
+      }
+      .score-badge {
+        min-width: 160px; min-height: 140px; display: grid; place-items: center;
+        background: linear-gradient(135deg, var(--accent) 0%, #0284c7 50%, #7c3aed 100%);
+        color: white; border-radius: var(--radius-xl);
+        box-shadow: 0 12px 30px rgba(14, 165, 233, 0.35); 
+        text-align: center; transition: var(--transition); 
+        animation: scaleIn 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+      }
+      .score-badge::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+        animation: shine 3s infinite;
+      }
+      @keyframes scaleIn { 
+        from { opacity: 0; transform: scale(0.8); } 
+        to { opacity: 1; transform: scale(1); } 
+      }
+      .score-badge:hover { transform: scale(1.05) rotate(2deg); }
+      .score-badge.expelled { 
+        background: linear-gradient(135deg, var(--danger) 0%, #991b1b 100%); 
+      }
+      .score-badge.absent { 
+        background: linear-gradient(135deg, var(--muted) 0%, #334155 100%); 
+      }
+      .score-badge span { 
+        font-size: 0.85rem; font-weight: 700; text-transform: uppercase; 
+        opacity: 0.95; letter-spacing: 0.05em; position: relative; z-index: 1;
+      }
+      .score-badge b { 
+        font-size: 2.25rem; font-weight: 800; display: block; 
+        margin-top: 6px; letter-spacing: -0.02em; position: relative; z-index: 1;
+      }
+
+      .metric {
+        padding: 18px; background: var(--bg); border-radius: var(--radius); 
+        border: 1px solid var(--line); transition: var(--transition); 
+      }
+      .metric:hover { 
+        background: var(--surface); border-color: var(--primary); 
+        transform: translateY(-4px); box-shadow: var(--shadow-md); 
+      }
+      .metric span { 
+        display: block; font-size: 0.75rem; font-weight: 700; 
+        color: var(--muted); text-transform: uppercase; 
+        margin-bottom: 8px; letter-spacing: 0.05em; 
+      }
+      .metric b { font-size: 1.35rem; font-weight: 800; color: var(--ink); }
+
+      .table-wrap { 
+        overflow-x: auto; border: 1px solid var(--line); 
+        border-radius: var(--radius-xl); background: var(--surface); 
+        box-shadow: var(--shadow-sm);
+      }
+      table { width: 100%; border-collapse: collapse; min-width: 800px; }
+      th, td { 
+        padding: 16px 20px; text-align: left; 
+        border-bottom: 1px solid var(--line); 
+      }
+      th { 
+        font-size: 0.75rem; font-weight: 700; text-transform: uppercase; 
+        color: var(--muted); background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        letter-spacing: 0.06em; 
+      }
+      tr:last-child td { border-bottom: 0; }
+      tr:hover td { background: var(--primary-soft); }
+
+      .tabs { 
+        display: flex; gap: 4px; margin-bottom: 28px; 
+        background: var(--surface-glass);
+        backdrop-filter: blur(10px);
+        padding: 6px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--line);
+      }
+      .tab {
+        padding: 12px 22px; font-weight: 600; color: var(--muted); 
+        border-radius: var(--radius); background: transparent; 
+        transition: var(--transition);
+        flex: 1;
+        text-align: center;
+      }
+      .tab:hover { color: var(--primary); background: var(--primary-soft); }
+      .tab.active { 
+        color: var(--primary); 
+        background: var(--surface); 
+        box-shadow: var(--shadow-sm);
+        font-weight: 700;
+      }
+
+      .panel { display: none; animation: fadeIn 0.4s ease; }
+      .panel.active { display: block; }
+      @keyframes fadeIn { 
+        from { opacity: 0; transform: translateY(10px); } 
+        to { opacity: 1; transform: translateY(0); } 
+      }
+
+      /* FIXED: Modal system - proper show/hide */
+      .modal-backdrop {
+        position: fixed; inset: 0; z-index: 50; 
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px); 
+        display: none;
+        place-items: center; padding: 20px;
+        opacity: 0; transition: opacity 0.3s;
+      }
+      .modal-backdrop.show { 
+        display: grid;
+        opacity: 1;
+      }
+      .modal-card {
+        width: 100%; max-width: 480px; 
+        background: var(--surface); border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-2xl); overflow: hidden; 
+        transform: scale(0.9); transition: transform 0.3s;
+      }
+      .modal-backdrop.show .modal-card { transform: scale(1); }
+
+      .toast {
+        position: fixed; bottom: 28px; right: 28px; 
+        background: linear-gradient(135deg, var(--ink) 0%, #1e293b 100%); 
+        color: white;
+        padding: 16px 24px; border-radius: var(--radius); 
+        box-shadow: var(--shadow-2xl);
+        transform: translateY(100px); opacity: 0; pointer-events: none; 
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+        z-index: 100;
+        font-weight: 500; display: flex; align-items: center; gap: 12px; 
+        max-width: 400px;
+      }
+      .toast.show { transform: translateY(0); opacity: 1; }
+
+      .hidden { display: none !important; }
+      
+      .developer-credit {
+        text-align: center; margin-top: 64px; padding: 28px; 
+        color: var(--muted); font-size: 0.9rem;
+        background: var(--surface-glass);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+      }
+      .developer-credit a { 
+        color: var(--primary); font-weight: 700; text-decoration: none; 
+        transition: var(--transition); 
+      }
+      .developer-credit a:hover { 
+        text-decoration: underline;
+      }
+
+      .print-section {
+        margin-bottom: 24px; padding: 24px; 
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: var(--radius-xl);
+        border: 1.5px solid var(--line); 
+        transition: var(--transition);
+      }
+      .print-section:hover { 
+        border-color: var(--primary); 
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+      .print-section-title {
+        font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: var(--ink);
+        display: flex; align-items: center; gap: 10px;
+      }
+      .print-section-title::before {
+        content: ""; width: 4px; height: 24px; 
+        background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+        border-radius: 2px;
+      }
+      .print-controls {
+        display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;
+      }
+
+      @media (max-width: 1024px) {
+        .grid-2 { grid-template-columns: 360px 1fr; gap: 24px; }
+        .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        .stat-box .value { font-size: 1.75rem; }
+      }
+
+      @media (max-width: 768px) {
+        .app-shell { width: 100%; padding: 16px; }
+        .topbar { padding: 16px 20px; flex-direction: column; align-items: flex-start; gap: 12px; }
+        .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        .hero-panel { padding: 28px 24px; }
+        .hero-panel h2 { font-size: 1.5rem; }
+        .card-header, .card-body { padding: 20px; }
+        .result-header { flex-direction: column; gap: 20px; }
+        .score-badge { width: 100%; min-height: 120px; }
+        .inline-form { grid-template-columns: 1fr; }
+        .tabs { overflow-x: auto; padding: 4px; }
+        .tab { padding: 10px 14px; font-size: 0.85rem; white-space: nowrap; flex: 0 0 auto; }
+        .print-controls { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 480px) {
+        .stat-box { padding: 20px 16px; }
+        .stat-box .value { font-size: 1.5rem; }
+        .metric { padding: 14px; }
+        .metric b { font-size: 1.15rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-icon">IC</div>
+          <div class="brand-text">
+            <h1>Ideal Coaching Centre</h1>
+            <p>Smart Result Portal</p>
+          </div>
+        </div>
+        <span id="modeBadge" class="mode-badge">Local Mode</span>
+      </header>
+
+      <main>
+        <section id="studentView">
+          <div class="grid-2">
+            <div>
+              <div class="card" style="margin-bottom: 24px;">
+                <div class="card-body">
+                  <h3 class="card-title">Find Your Result</h3>
+                  <p class="card-subtitle" style="margin-bottom: 20px;">Enter your 6-digit roll number below.</p>
+                  <form id="searchForm">
+                    <label for="studentRoll">Roll Number</label>
+                    <div class="inline-form">
+                      <input id="studentRoll" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="e.g., 123456" required />
+                      <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <div class="hero-panel">
+                <h2>Track Your Academic Journey</h2>
+                <p>View your batch-wise merit position, GPA, grade, and detailed exam history.</p>
+              </div>
+            </div>
+
+            <div id="resultArea" class="hidden">
+              <div class="card card-accent" style="margin-bottom: 24px;">
+                <div class="card-body">
+                  <div class="result-header">
+                    <div>
+                      <p style="color: var(--primary); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 10px;">Latest Result</p>
+                      <h2 id="resExamName" style="font-size: 1.6rem; margin-bottom: 10px; font-weight: 800;">-</h2>
+                      <p id="resStudentInfo" style="color: var(--muted); font-size: 0.95rem;">-</p>
+                    </div>
+                    <div id="resScoreBadge" class="score-badge">
+                      <span>Marks</span>
+                      <b id="resMarks">-</b>
+                    </div>
+                  </div>
+                  <div class="grid-4" id="resMetrics"></div>
+                  <div style="margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="printResultBtn">🖨️ Print Report Card</button>
+                    <button class="btn btn-secondary" id="shareResultBtn">🔗 Copy Share Link</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card card-accent-blue" style="margin-bottom: 24px;">
+                <div class="card-header">
+                  <h3 class="card-title">Overall Batch Performance</h3>
+                  <p class="card-subtitle">Cumulative performance across all exams in your batch</p>
+                </div>
+                <div class="card-body">
+                  <div class="grid-4" id="overallMetrics"></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Complete Exam History</h3>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr><th>Exam</th><th>Date</th><th>Batch</th><th>Marks</th><th>GPA</th><th>Batch Merit</th></tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="adminView" class="hidden">
+          <div class="card" style="margin-bottom: 28px; background: linear-gradient(135deg, var(--primary-soft) 0%, var(--accent-light) 50%, var(--purple-light) 100%);">
+            <div class="card-body" style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 class="card-title" style="color: var(--primary); font-size: 1.25rem;">Admin Dashboard</h3>
+                <p class="card-subtitle">Manage students, exams, and results securely</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="adminLogoutBtn">Logout</button>
+            </div>
+          </div>
+
+          <div class="grid-4" id="adminStats" style="margin-bottom: 32px;"></div>
+
+          <div class="grid-2" style="margin-bottom: 32px;">
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Pass / Fail Ratio</h3></div>
+              <div class="card-body"><canvas id="passFailChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3 class="card-title">Batch-wise Average</h3></div>
+              <div class="card-body"><canvas id="batchChart"></canvas></div>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="tabResults">Results</button>
+            <button class="tab" data-tab="tabStudents">Students</button>
+            <button class="tab" data-tab="tabExams">Exams</button>
+            <button class="tab" data-tab="tabPrint">Print & Export</button>
+          </div>
+
+          <div id="tabResults" class="panel active">
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="card-body">
+                <h3 class="card-title" style="margin-bottom: 20px;">Add / Edit Result</h3>
+                <form id="resultForm" class="grid-4" style="align-items: end; gap: 16px;">
+                  <div><label>Exam</label><select id="resFormExam" required></select></div>
+                  <div><label>Roll Number</label><input id="resFormRoll" type="text" maxlength="6" pattern="[0-9]{6}" required /></div>
+                  <div><label>Student Name</label><input id="resFormName" type="text" readonly /></div>
+                  <div><label>Marks</label><input id="resFormMarks" type="number" min="0" value="0" required /></div>
+                  <div><label>Status</label>
+                    <select id="resFormStatus">
+                      <option value="regular">Regular</option>
+                      <option value="absent">Absent</option>
+                      <option value="expelled">Expelled</option>
+                    </select>
+                  </div>
+                  <div style="grid-column: span 2;"><label>Preview</label><div id="resPreview" class="card-subtitle" style="padding: 14px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--line);">Enter details to see preview</div></div>
+                  <div style="grid-column: span 2;"><button type="submit" class="btn btn-primary" style="width: 100%;">Save Result</button></div>
+                </form>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+                  <input id="filterText" type="search" placeholder="Search..." style="max-width: 300px;" />
+                  <select id="filterBatch" style="max-width: 200px;"><option value="">All Batches</option></select>
+                  <select id="filterExam" style="max-width: 250px;"><option value="">All Exams</option></select>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Roll</th><th>Name</th><th>Batch</th><th>Exam</th><th>Marks</th><th>GPA</th><th>Merit</th><th>Action</th></tr></thead>
+                    <tbody id="resultsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tabStudents" class="panel">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title" style="margin-bottom: 20px;">Add / Edit Student</h3>
+                  <form id="studentForm">
+                    <div style="margin-bottom: 16px;"><label>Roll Number</label><input id="stuRoll" type="text" maxlength="6" pattern="[0-9]{6}" required /></div>
+                    <div style="margin-bottom: 16px;"><label>Full Name</label><input id="stuName" type="text" required /></div>
+                    <div style="margin-bottom: 20px;"><label>Batch</label><input id="stuBatch" type="text" placeholder="Class 9 - Batch A" required /></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Save Student</button>
+                  </form>
+                  <div style="margin-top: 28px; padding: 20px; background: var(--bg); border-radius: var(--radius); border: 2px dashed var(--line-strong);">
+                    <label>Bulk Upload (Excel/CSV)</label>
+                    <input id="excelUpload" type="file" accept=".xlsx,.xls,.csv" />
+                    <p class="card-subtitle" style="margin-top: 10px;">Columns: Roll, Name, Batch</p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title" style="margin-bottom: 20px;">Student List</h3>
+                  <div class="table-wrap" style="max-height: 500px; overflow-y: auto;">
+                    <table>
+                      <thead><tr><th>Roll</th><th>Name</th><th>Batch</th><th>Action</th></tr></thead>
+                      <tbody id="studentsTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tabExams" class="panel">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title" style="margin-bottom: 20px;">Create / Edit Exam</h3>
+                  <form id="examForm">
+                    <div style="margin-bottom: 16px;"><label>Exam Name</label><input id="examName" type="text" required /></div>
+                    <div style="margin-bottom: 16px;"><label>Date</label><input id="examDate" type="date" required /></div>
+                    <div style="margin-bottom: 16px;"><label>Target Batch</label>
+                      <select id="examBatch" required><option value="All">All Batches</option></select>
+                    </div>
+                    <div style="margin-bottom: 16px;"><label>Full Marks</label><input id="examFullMarks" type="number" min="1" value="100" required /></div>
+                    <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                      <input type="checkbox" id="examPublished" checked style="width: auto; min-height: auto;" />
+                      <label for="examPublished" style="margin: 0; cursor: pointer;">Publish immediately</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Save Exam</button>
+                  </form>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="card-title" style="margin-bottom: 20px;">Exam List</h3>
+                  <div class="table-wrap" style="max-height: 500px; overflow-y: auto;">
+                    <table>
+                      <thead><tr><th>Name</th><th>Date</th><th>Batch</th><th>Status</th><th>Action</th></tr></thead>
+                      <tbody id="examsTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tabPrint" class="panel">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title" style="margin-bottom: 8px;">Advanced Print & Export Center</h3>
+                <p class="card-subtitle" style="margin-bottom: 28px;">Generate professional reports</p>
+
+                <div class="print-section">
+                  <div class="print-section-title">👤 Individual Student Report</div>
+                  <div class="print-controls">
+                    <div>
+                      <label>Select Student</label>
+                      <select id="printStudentSelect"><option value="">-- Choose a student --</option></select>
+                    </div>
+                    <button class="btn btn-primary" id="printStudentBtn">🖨️ Print</button>
+                  </div>
+                </div>
+
+                <div class="print-section">
+                  <div class="print-section-title">📚 Batch-wise Report</div>
+                  <div class="print-controls">
+                    <div>
+                      <label>Select Batch</label>
+                      <select id="printBatchSelect"><option value="">-- Choose a batch --</option></select>
+                    </div>
+                    <button class="btn btn-primary" id="printBatchBtn">🖨️ Print</button>
+                  </div>
+                </div>
+
+                <div class="print-section">
+                  <div class="print-section-title">📝 Exam-wise Report</div>
+                  <div class="print-controls">
+                    <div>
+                      <label>Select Exam</label>
+                      <select id="printExamSelect"><option value="">-- Choose an exam --</option></select>
+                    </div>
+                    <button class="btn btn-primary" id="printExamBtn">🖨️ Print</button>
+                  </div>
+                </div>
+
+                <div class="print-section">
+                  <div class="print-section-title">📊 General Reports</div>
+                  <div class="grid-3" style="gap: 12px;">
+                    <button class="btn btn-secondary" id="printAllStudentsBtn">📄 All Students</button>
+                    <button class="btn btn-secondary" id="printAllExamsBtn">📄 All Exams</button>
+                    <button class="btn btn-secondary" id="printCurrentFilterBtn">📄 Filtered</button>
+                  </div>
+                  <div style="margin-top: 16px;">
+                    <button class="btn btn-primary" id="exportCsvBtn" style="width: 100%;">📊 Export CSV</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="developer-credit">
+        Developed with ❤️ by <a href="http://shad.iam.bd/" target="_blank">Shahrim Ahammed Shad</a>
+      </footer>
+    </div>
+
+    <div id="loginModal" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="card-body" style="padding: 32px;">
+          <h3 class="card-title" style="font-size: 1.3rem; margin-bottom: 8px;">Admin Login</h3>
+          <p class="card-subtitle" style="margin-bottom: 24px;">Enter your credentials</p>
+          <form id="loginForm">
+            <div style="margin-bottom: 16px;">
+              <label>Email</label>
+              <input id="loginEmail" type="email" required />
+            </div>
+            <div style="margin-bottom: 24px;">
+              <label>Password</label>
+              <input id="loginPassword" type="password" required />
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="button" class="btn btn-secondary" id="cancelLogin" style="flex: 1;">Cancel</button>
+              <button type="submit" class="btn btn-primary" style="flex: 1;">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="duplicateModal" class="modal-backdrop">
+      <div class="modal-card" style="max-width: 600px; max-height: 80vh; overflow: auto;">
+        <div class="card-body" style="padding: 28px;">
+          <h3 class="card-title" style="margin-bottom: 8px;">Duplicate Roll Found</h3>
+          <p class="card-subtitle" style="margin-bottom: 20px;">Choose which record to keep.</p>
+          <div id="duplicateContent"></div>
+          <div style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+            <button class="btn btn-secondary" id="cancelDuplicate">Cancel</button>
+            <button class="btn btn-primary" id="confirmDuplicate">Import Selected</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      const firebaseConfig = {
+        apiKey: "AIzaSyBxxDm2MoiqMcKVknuffitT4wBPku0HKn0",
+        authDomain: "result-13-ba007.firebaseapp.com",
+        projectId: "result-13-ba007",
+        storageBucket: "result-13-ba007.firebasestorage.app",
+        messagingSenderId: "935685272084",
+        appId: "1:935685272084:web:1dff03ce78c7f4b393ad01"
+      };
+      const ADMIN_EMAIL = "admin@coaching.local";
+      const ADMIN_PASSWORD = "752002";
+      const ADMIN_TRIGGER = "112231";
+      const STORE_KEY = "icc_pro_v11";
+
+      let fbReady = false, auth = null, db = null, fb = {};
+      let students = [], exams = [], results = [], ranked = [], batchOverall = [];
+      let charts = {};
+      let currentStudentData = null;
+      let currentLatestResult = null;
+      let editingStudentRoll = null;
+      let editingExamId = null;
+      let toastTimeout = null;
+
+      const el = (id) => document.getElementById(id);
+      const els = {
+        studentView: el('studentView'), adminView: el('adminView'),
+        searchForm: el('searchForm'), studentRoll: el('studentRoll'),
+        resultArea: el('resultArea'), modeBadge: el('modeBadge'),
+        resExamName: el('resExamName'), resStudentInfo: el('resStudentInfo'),
+        resScoreBadge: el('resScoreBadge'), resMarks: el('resMarks'),
+        resMetrics: el('resMetrics'), overallMetrics: el('overallMetrics'),
+        historyBody: el('historyBody'),
+        resultForm: el('resultForm'), resFormExam: el('resFormExam'),
+        resFormRoll: el('resFormRoll'), resFormName: el('resFormName'),
+        resFormMarks: el('resFormMarks'), resFormStatus: el('resFormStatus'),
+        resPreview: el('resPreview'),
+        studentForm: el('studentForm'), stuRoll: el('stuRoll'),
+        stuName: el('stuName'), stuBatch: el('stuBatch'),
+        examForm: el('examForm'), examName: el('examName'),
+        examDate: el('examDate'), examBatch: el('examBatch'),
+        examFullMarks: el('examFullMarks'), examPublished: el('examPublished'),
+        filterText: el('filterText'), filterBatch: el('filterBatch'), filterExam: el('filterExam'),
+        resultsTableBody: el('resultsTableBody'), studentsTableBody: el('studentsTableBody'), examsTableBody: el('examsTableBody'),
+        loginModal: el('loginModal'), loginForm: el('loginForm'),
+        loginEmail: el('loginEmail'), loginPassword: el('loginPassword'),
+        duplicateModal: el('duplicateModal'), duplicateContent: el('duplicateContent'),
+        printStudentSelect: el('printStudentSelect'),
+        printBatchSelect: el('printBatchSelect'),
+        printExamSelect: el('printExamSelect'),
+        loadingOverlay: el('loadingOverlay')
+      };
+
+      function showLoading() { els.loadingOverlay.classList.add('show'); }
+      function hideLoading() { els.loadingOverlay.classList.remove('show'); }
+
+      // FIXED: Modal show/hide - properly toggle classes
+      function showModal(modalEl) {
+        modalEl.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+      function hideModal(modalEl) {
+        modalEl.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+
+      function animateCounter(element, target, duration = 1000) {
+        const start = 0;
+        const increment = target / (duration / 16);
+        let current = start;
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            element.textContent = target;
+            clearInterval(timer);
+          } else {
+            element.textContent = Math.floor(current);
+          }
+        }, 16);
+      }
+
+      async function init() {
+        await setupFirebase();
+        seedData();
+        bindEvents();
+        await loadData();
+        checkUrlParams();
+      }
+
+      async function setupFirebase() {
+        if (!firebaseConfig.apiKey) return;
+        try {
+          const appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+          const authMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
+          const fireMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+          fb = { ...appMod, ...authMod, ...fireMod };
+          const app = fb.initializeApp(firebaseConfig);
+          auth = fb.getAuth(app);
+          db = fb.getFirestore(app);
+          fbReady = true;
+          els.modeBadge.textContent = "Firebase Live";
+          els.modeBadge.style.background = "var(--primary-light)";
+          els.modeBadge.style.color = "var(--primary)";
+          els.modeBadge.style.borderColor = "var(--primary)";
+          
+          fb.onAuthStateChanged(auth, (user) => {
+            if (user && user.email === ADMIN_EMAIL) showAdmin();
+            else showStudent();
+          });
+        } catch (e) {
+          console.error(e);
+          showToast("Firebase connection failed. Using Local Mode.");
+        }
+      }
+
+      function checkUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        const roll = params.get('roll');
+        if (roll && /^\d{6}$/.test(roll)) {
+          els.studentRoll.value = roll;
+          els.searchForm.dispatchEvent(new Event('submit'));
+        }
+      }
+
+      async function loadData() {
+        showLoading();
+        try {
+          if (fbReady) {
+            const [s, e, r] = await Promise.all([
+              fb.getDocs(fb.collection(db, "students")),
+              fb.getDocs(fb.collection(db, "exams")),
+              fb.getDocs(fb.collection(db, "results"))
+            ]);
+            students = s.docs.map(d => d.data());
+            exams = e.docs.map(d => d.data());
+            results = r.docs.map(d => d.data());
+          } else {
+            const local = JSON.parse(localStorage.getItem(STORE_KEY) || '{"students":[],"exams":[],"results":[]}');
+            students = local.students || [];
+            exams = local.exams || [];
+            results = local.results || [];
+          }
+          
+          students.sort((a, b) => a.roll.localeCompare(b.roll));
+          exams.sort((a, b) => new Date(b.date) - new Date(a.date));
+          
+          processRanking();
+          updateDropdowns();
+          renderAll();
+        } catch (err) {
+          showToast("Data load error: " + err.message);
+        } finally {
+          hideLoading();
+        }
+      }
+
+      function processRanking() {
+        ranked = results.map(r => {
+          const stu = students.find(s => s.roll === r.roll);
+          const ex = exams.find(e => e.id === r.examId);
+          if (!stu || !ex) return null;
+          const isAbsent = r.status === 'absent';
+          const isExpelled = r.status === 'expelled';
+          const pct = (isAbsent || isExpelled) ? 0 : (r.obtained / ex.fullMarks) * 100;
+          return {
+            ...r, stuName: stu.name, batch: stu.batch,
+            exName: ex.name, exDate: ex.date, exBatch: ex.batch,
+            fullMarks: ex.fullMarks, published: ex.published,
+            pct, gpa: (isAbsent || isExpelled) ? 0 : calcGpa(pct),
+            grade: (isAbsent || isExpelled) ? (isAbsent ? 'Absent' : 'Expelled') : calcGrade(pct),
+            isAbsent, isExpelled
+          };
+        }).filter(Boolean);
+
+        // FIXED: Handle "All" batch exams properly
+        const exBatchGroups = {};
+        ranked.forEach(item => {
+          if (!item.isAbsent && !item.isExpelled && item.published) {
+            // For "All" batch exams, group by student's batch
+            const effectiveBatch = item.exBatch === 'All' ? item.batch : item.exBatch;
+            const key = `${item.examId}|${effectiveBatch}`;
+            if (!exBatchGroups[key]) exBatchGroups[key] = [];
+            exBatchGroups[key].push(item);
+          }
+        });
+
+        Object.values(exBatchGroups).forEach(group => {
+          group.sort((a, b) => b.pct - a.pct || a.roll.localeCompare(b.roll));
+          assignMerit(group, 'exBatchMerit', 'pct');
+        });
+
+        const batchMap = {};
+        ranked.filter(i => i.published && !i.isAbsent && !i.isExpelled).forEach(i => {
+          if (!batchMap[i.batch]) batchMap[i.batch] = {};
+          if (!batchMap[i.batch][i.roll]) batchMap[i.batch][i.roll] = { roll: i.roll, batch: i.batch, total: 0, count: 0 };
+          batchMap[i.batch][i.roll].total += i.pct;
+          batchMap[i.batch][i.roll].count += 1;
+        });
+
+        batchOverall = [];
+        Object.values(batchMap).forEach(stuMap => {
+          const arr = Object.values(stuMap).map(s => ({ ...s, avg: s.total / s.count }));
+          arr.sort((a, b) => b.avg - a.avg || a.roll.localeCompare(b.roll));
+          assignMerit(arr, 'overallMerit', 'avg');
+          batchOverall.push(...arr);
+        });
+
+        ranked.sort((a, b) => new Date(b.exDate) - new Date(a.exDate));
+      }
+
+      function assignMerit(arr, field, scoreField) {
+        let lastScore = -1, lastRank = 0;
+        arr.forEach((item, idx) => {
+          const score = Number(item[scoreField].toFixed(4));
+          item[field] = (score === lastScore) ? lastRank : (idx + 1);
+          lastScore = score;
+          lastRank = item[field];
+        });
+      }
+
+      function calcGpa(p) { if(p>=80) return 5; if(p>=70) return 4; if(p>=60) return 3.5; if(p>=50) return 3; if(p>=40) return 2; if(p>=33) return 1; return 0; }
+      function calcGrade(p) { if(p>=80) return 'A+'; if(p>=70) return 'A'; if(p>=60) return 'A-'; if(p>=50) return 'B'; if(p>=40) return 'C'; if(p>=33) return 'D'; return 'F'; }
+      function fmtGpa(v) { return Number(v||0).toFixed(2); }
+      function ordinal(n) {
+        const s = ["th", "st", "nd", "rd"], v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+      }
+      function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'; }
+
+      function renderAll() {
+        renderAdminStats();
+        renderCharts();
+        renderResultsTable();
+        renderStudentsTable();
+        renderExamsTable();
+      }
+
+      function renderAdminStats() {
+        const pubExams = exams.filter(e => e.published).length;
+        const regular = ranked.filter(r => !r.isAbsent && !r.isExpelled);
+        const avg = regular.length ? (regular.reduce((s, r) => s + r.pct, 0) / regular.length) : 0;
+        const pass = regular.filter(r => r.pct >= 33).length;
+        const fail = regular.length - pass;
+
+        el('adminStats').innerHTML = `
+          <div class="stat-box"><div class="value" data-target="${students.length}">0</div><div class="label">Total Students</div></div>
+          <div class="stat-box"><div class="value" data-target="${exams.length}">0</div><div class="label">Exams (${pubExams} Published)</div></div>
+          <div class="stat-box"><div class="value" data-target="${avg.toFixed(0)}">0</div><div class="label">System Average %</div></div>
+          <div class="stat-box"><div class="value" style="color:${fail===0?'var(--primary)':'var(--danger)'}" data-target="${pass}">0</div><div class="label">Passed / ${regular.length} Total</div></div>
+        `;
+
+        el('adminStats').querySelectorAll('.value[data-target]').forEach(el => {
+          animateCounter(el, Number(el.dataset.target));
+        });
+      }
+
+      function renderCharts() {
+        const regular = ranked.filter(r => !r.isAbsent && !r.isExpelled && r.published);
+        const pass = regular.filter(r => r.pct >= 33).length;
+        const fail = regular.length - pass;
+
+        if (charts.passFail) charts.passFail.destroy();
+        charts.passFail = new Chart(el('passFailChart'), {
+          type: 'doughnut',
+          data: {
+            labels: ['Pass', 'Fail'],
+            datasets: [{ data: [pass, fail], backgroundColor: ['#059669', '#dc2626'], borderWidth: 0, borderRadius: 6 }]
+          },
+          options: { responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { padding: 20, font: { size: 13, weight: '600' } } } } }
+        });
+
+        const batchAvgs = {};
+        regular.forEach(r => {
+          if (!batchAvgs[r.batch]) batchAvgs[r.batch] = { total: 0, count: 0 };
+          batchAvgs[r.batch].total += r.pct;
+          batchAvgs[r.batch].count += 1;
+        });
+        const bLabels = Object.keys(batchAvgs);
+        const bData = bLabels.map(b => (batchAvgs[b].total / batchAvgs[b].count).toFixed(1));
+
+        if (charts.batch) charts.batch.destroy();
+        charts.batch = new Chart(el('batchChart'), {
+          type: 'bar',
+          data: {
+            labels: bLabels,
+            datasets: [{ label: 'Average %', data: bData, backgroundColor: '#0ea5e9', borderRadius: 8, borderSkipped: false }]
+          },
+          options: { responsive: true, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#e2e8f0' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+        });
+      }
+
+      function renderResultsTable() {
+        const txt = els.filterText.value.toLowerCase();
+        const bFilter = els.filterBatch.value;
+        const eFilter = els.filterExam.value;
+
+        const filtered = ranked.filter(r => {
+          const matchTxt = !txt || [r.roll, r.stuName, r.batch, r.exName].join(' ').toLowerCase().includes(txt);
+          const matchB = !bFilter || r.batch === bFilter;
+          const matchE = !eFilter || r.examId === eFilter;
+          return matchTxt && matchB && matchE;
+        });
+
+        els.resultsTableBody.innerHTML = filtered.length ? filtered.map(r => `
+          <tr>
+            <td><b>${r.roll}</b></td>
+            <td>${r.stuName}</td>
+            <td><span style="background:var(--bg);padding:4px 10px;border-radius:var(--radius-sm);font-size:0.8rem;font-weight:600;">${r.batch}</span></td>
+            <td>${r.exName} ${r.published ? '' : '<span style="color:var(--warning);font-size:0.75rem;font-weight:600;">(Draft)</span>'}</td>
+            <td>${r.isAbsent ? '<span style="color:var(--muted);font-weight:700;">Absent</span>' : r.isExpelled ? '<span style="color:var(--danger);font-weight:700;">Expelled</span>' : `${r.obtained}/${r.fullMarks}`}</td>
+            <td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</td>
+            <td>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</td>
+            <td>
+              <button class="btn btn-sm btn-warning" onclick="window.editResult('${r.id}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="window.deleteResult('${r.id}')">Del</button>
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">No results found.</td></tr>';
+      }
+
+      function renderStudentsTable() {
+        els.studentsTableBody.innerHTML = students.map(s => `
+          <tr>
+            <td><b>${s.roll}</b></td>
+            <td>${s.name}</td>
+            <td>${s.batch}</td>
+            <td>
+              <button class="btn btn-sm btn-warning" onclick="window.editStudent('${s.roll}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="window.deleteStudent('${s.roll}')">Del</button>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="4" style="text-align:center;padding:32px;">No students.</td></tr>';
+      }
+
+      function renderExamsTable() {
+        els.examsTableBody.innerHTML = exams.map(e => `
+          <tr>
+            <td><b>${e.name}</b></td>
+            <td>${fmtDate(e.date)}</td>
+            <td>${e.batch}</td>
+            <td><span style="color:${e.published ? 'var(--primary)' : 'var(--warning)'}; font-weight:700;">${e.published ? 'Published' : 'Draft'}</span></td>
+            <td>
+              <button class="btn btn-sm btn-warning" onclick="window.editExam('${e.id}')">Edit</button>
+              <button class="btn btn-sm btn-secondary" onclick="window.toggleExam('${e.id}')">${e.published ? 'Unpublish' : 'Publish'}</button>
+              <button class="btn btn-sm btn-danger" onclick="window.deleteExam('${e.id}')">Del</button>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="5" style="text-align:center;padding:32px;">No exams.</td></tr>';
+      }
+
+      function updateDropdowns() {
+        const batches = [...new Set(students.map(s => s.batch))].sort();
+        const bOpts = '<option value="">All Batches</option>' + batches.map(b => `<option value="${b}">${b}</option>`).join('');
+        els.filterBatch.innerHTML = bOpts;
+        els.examBatch.innerHTML = '<option value="All">All Batches</option>' + batches.map(b => `<option value="${b}">${b}</option>`).join('');
+
+        const eOpts = '<option value="">All Exams</option>' + exams.map(e => `<option value="${e.id}">${e.name} (${e.batch})</option>`).join('');
+        els.filterExam.innerHTML = eOpts;
+        els.resFormExam.innerHTML = eOpts.replace('All Exams', 'Select Exam');
+
+        els.printStudentSelect.innerHTML = '<option value="">-- Choose a student --</option>' + 
+          students.map(s => `<option value="${s.roll}">${s.roll} - ${s.name} (${s.batch})</option>`).join('');
+        
+        els.printBatchSelect.innerHTML = '<option value="">-- Choose a batch --</option>' + 
+          batches.map(b => `<option value="${b}">${b}</option>`).join('');
+        
+        els.printExamSelect.innerHTML = '<option value="">-- Choose an exam --</option>' + 
+          exams.map(e => `<option value="${e.id}">${e.name} - ${fmtDate(e.date)} (${e.batch})</option>`).join('');
+      }
+
+      function renderStudentPortal(roll) {
+        const stu = students.find(s => s.roll === roll);
+        const pubResults = ranked.filter(r => r.roll === roll && r.published).sort((a,b) => new Date(b.exDate) - new Date(a.exDate));
+        
+        els.resultArea.classList.remove('hidden');
+        
+        if (!stu) {
+          els.resExamName.textContent = "Student Not Found";
+          els.resStudentInfo.textContent = `No record found for roll: ${roll}`;
+          els.resScoreBadge.className = 'score-badge absent';
+          els.resMarks.textContent = "-";
+          els.resMetrics.innerHTML = '';
+          els.overallMetrics.innerHTML = '';
+          els.historyBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No data</td></tr>';
+          currentStudentData = null;
+          return;
+        }
+
+        currentStudentData = stu;
+        currentLatestResult = pubResults[0] || null;
+
+        els.resExamName.textContent = currentLatestResult ? currentLatestResult.exName : "No Published Results Yet";
+        els.resStudentInfo.textContent = `${stu.name} | Roll: ${stu.roll} | Batch: ${stu.batch}`;
+
+        if (currentLatestResult) {
+          const r = currentLatestResult;
+          els.resScoreBadge.className = `score-badge ${r.isAbsent ? 'absent' : r.isExpelled ? 'expelled' : ''}`;
+          els.resMarks.textContent = r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks}`;
+          
+          els.resMetrics.innerHTML = `
+            <div class="metric"><span>Batch Merit</span><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></div>
+            <div class="metric"><span>GPA</span><b>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</b></div>
+            <div class="metric"><span>Grade</span><b>${r.grade}</b></div>
+            <div class="metric"><span>Percentage</span><b>${r.isAbsent || r.isExpelled ? '-' : r.pct.toFixed(2) + '%'}</b></div>
+          `;
+        } else {
+          els.resScoreBadge.className = 'score-badge';
+          els.resMarks.textContent = "-";
+          els.resMetrics.innerHTML = '<div class="metric" style="grid-column:1/-1;text-align:center;">No published results available yet.</div>';
+        }
+
+        const overall = batchOverall.find(o => o.roll === roll && o.batch === stu.batch);
+        if (overall) {
+          els.overallMetrics.innerHTML = `
+            <div class="metric"><span>Batch Combined Merit</span><b style="color:var(--primary);">${ordinal(overall.overallMerit)}</b></div>
+            <div class="metric"><span>Total Exams</span><b>${overall.count}</b></div>
+            <div class="metric"><span>Average Score</span><b>${overall.avg.toFixed(2)}%</b></div>
+            <div class="metric"><span>Overall GPA</span><b>${fmtGpa(calcGpa(overall.avg))}</b></div>
+          `;
+        } else {
+          els.overallMetrics.innerHTML = '<div class="metric" style="grid-column:1/-1;text-align:center;">No ranked data available.</div>';
+        }
+
+        els.historyBody.innerHTML = pubResults.map(r => `
+          <tr>
+            <td><b>${r.exName}</b></td>
+            <td>${fmtDate(r.exDate)}</td>
+            <td>${r.batch}</td>
+            <td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks} (${r.pct.toFixed(1)}%)`}</td>
+            <td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa) + ' (' + r.grade + ')'}</td>
+            <td><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td>
+          </tr>
+        `).join('') || '<tr><td colspan="6" style="text-align:center;">No history</td></tr>';
+      }
+
+      function bindEvents() {
+        els.searchForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const roll = els.studentRoll.value.trim();
+          if (!/^\d{6}$/.test(roll)) return showToast("Roll must be exactly 6 digits.");
+          if (roll === ADMIN_TRIGGER) {
+            els.studentRoll.value = '';
+            return showAdminLogin();
+          }
+          loadData().then(() => renderStudentPortal(roll));
+        });
+
+        els.resFormRoll.addEventListener('input', () => {
+          const stu = students.find(s => s.roll === els.resFormRoll.value.trim());
+          els.resFormName.value = stu ? stu.name : '';
+          updateResPreview();
+        });
+        [els.resFormExam, els.resFormMarks, els.resFormStatus].forEach(el => el.addEventListener('change', updateResPreview));
+        els.resFormMarks.addEventListener('input', updateResPreview);
+
+        els.resultForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showLoading();
+          try {
+            const exId = els.resFormExam.value;
+            const roll = els.resFormRoll.value.trim();
+            const stu = students.find(s => s.roll === roll);
+            const ex = exams.find(e => e.id === exId);
+            if (!stu || !ex) {
+              hideLoading();
+              return showToast("Invalid Roll or Exam.");
+            }
+            
+            const status = els.resFormStatus.value;
+            const obtained = (status === 'absent' || status === 'expelled') ? 0 : Number(els.resFormMarks.value);
+            
+            if (status === 'regular' && (obtained < 0 || obtained > ex.fullMarks)) {
+              hideLoading();
+              return showToast(`Marks must be 0-${ex.fullMarks}`);
+            }
+
+            const res = { id: `${exId}_${roll}`, examId: exId, roll, obtained, status, updatedAt: new Date().toISOString() };
+            await saveData('results', res.id, res);
+            els.resultForm.reset();
+            els.resFormName.value = '';
+            els.resPreview.textContent = 'Enter details to see preview';
+            await loadData();
+            showToast("Result saved successfully!");
+          } catch (err) {
+            showToast("Error: " + err.message);
+          } finally {
+            hideLoading();
+          }
+        });
+
+        // FIXED: Student form with proper edit handling
+        els.studentForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showLoading();
+          try {
+            const roll = els.stuRoll.value.trim();
+            if (!/^\d{6}$/.test(roll) || roll === ADMIN_TRIGGER) {
+              hideLoading();
+              return showToast("Invalid or reserved roll number.");
+            }
+            
+            const stu = { roll, name: els.stuName.value.trim(), batch: els.stuBatch.value.trim(), updatedAt: new Date().toISOString() };
+            
+            // If editing and roll changed, migrate related results
+            if (editingStudentRoll && editingStudentRoll !== roll) {
+              // Delete old student
+              await deleteData('students', editingStudentRoll);
+              // Migrate results to new roll
+              const relatedResults = results.filter(r => r.roll === editingStudentRoll);
+              for (const r of relatedResults) {
+                await deleteData('results', r.id);
+                const newResult = { ...r, id: `${r.examId}_${roll}`, roll, updatedAt: new Date().toISOString() };
+                await saveData('results', newResult.id, newResult);
+              }
+            }
+            
+            await saveData('students', roll, stu);
+            editingStudentRoll = null;
+            els.studentForm.reset();
+            els.stuRoll.disabled = false;
+            await loadData();
+            showToast("Student saved successfully!");
+          } catch (err) {
+            showToast("Error: " + err.message);
+          } finally {
+            hideLoading();
+          }
+        });
+
+        // FIXED: Exam form with proper edit handling - migrate results when exam ID changes
+        els.examForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showLoading();
+          try {
+            const name = els.examName.value.trim();
+            const date = els.examDate.value;
+            const batch = els.examBatch.value;
+            const fullMarks = Number(els.examFullMarks.value);
+            
+            const newId = `${date}-${batch.replace(/[^a-z0-9]/gi,'')}-${name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}`;
+            
+            // If editing, keep the same ID to preserve results
+            const id = editingExamId || newId;
+            
+            const ex = { id, name, date, batch, fullMarks, published: els.examPublished.checked, updatedAt: new Date().toISOString() };
+            await saveData('exams', id, ex);
+            
+            editingExamId = null;
+            els.examForm.reset();
+            els.examDate.value = new Date().toISOString().split('T')[0];
+            await loadData();
+            showToast("Exam saved successfully!");
+          } catch (err) {
+            showToast("Error: " + err.message);
+          } finally {
+            hideLoading();
+          }
+        });
+
+        [els.filterText, els.filterBatch, els.filterExam].forEach(el => el.addEventListener('input', renderResultsTable));
+
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            el(tab.dataset.tab).classList.add('active');
+          });
+        });
+
+        el('printResultBtn').addEventListener('click', printOfficialReportCard);
+        el('shareResultBtn').addEventListener('click', () => {
+          if (!currentStudentData) return showToast("No student data available.");
+          const url = `${window.location.origin}${window.location.pathname}?roll=${currentStudentData.roll}`;
+          navigator.clipboard.writeText(url).then(() => showToast("Share link copied!"));
+        });
+        
+        el('exportCsvBtn').addEventListener('click', exportCsv);
+        el('printCurrentFilterBtn').addEventListener('click', printFilteredResults);
+        el('printAllStudentsBtn').addEventListener('click', printAllStudents);
+        el('printAllExamsBtn').addEventListener('click', printAllExams);
+        el('printStudentBtn').addEventListener('click', printSelectedStudentReport);
+        el('printBatchBtn').addEventListener('click', printSelectedBatchReport);
+        el('printExamBtn').addEventListener('click', printSelectedExamReport);
+        
+        el('adminLogoutBtn').addEventListener('click', async () => {
+          showLoading();
+          try {
+            if (fbReady) await fb.signOut(auth);
+            showStudent();
+            showToast("Logged out.");
+          } catch (err) {
+            showToast("Logout error: " + err.message);
+          } finally {
+            hideLoading();
+          }
+        });
+
+        els.loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          showLoading();
+          const email = els.loginEmail.value.trim();
+          const pass = els.loginPassword.value;
+          
+          try {
+            if (fbReady) {
+              await fb.signInWithEmailAndPassword(auth, email, pass);
+              hideModal(els.loginModal);
+              els.loginForm.reset();
+              showToast("Login successful!");
+            } else {
+              if (email === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
+                hideModal(els.loginModal);
+                els.loginForm.reset();
+                showAdmin();
+                showToast("Local Admin Access Granted");
+              } else {
+                showToast("Invalid credentials");
+              }
+            }
+          } catch (err) {
+            showToast("Login failed: " + err.message);
+          } finally {
+            hideLoading();
+          }
+        });
+
+        el('cancelLogin').addEventListener('click', () => {
+          hideModal(els.loginModal);
+          els.loginForm.reset();
+        });
+
+        // Close modal on backdrop click
+        els.loginModal.addEventListener('click', (e) => {
+          if (e.target === els.loginModal) {
+            hideModal(els.loginModal);
+            els.loginForm.reset();
+          }
+        });
+        els.duplicateModal.addEventListener('click', (e) => {
+          if (e.target === els.duplicateModal) hideModal(els.duplicateModal);
+        });
+
+        window.editResult = (id) => {
+          const r = ranked.find(x => x.id === id);
+          if (!r) return;
+          els.resFormExam.value = r.examId;
+          els.resFormRoll.value = r.roll;
+          els.resFormName.value = r.stuName;
+          els.resFormMarks.value = r.obtained;
+          els.resFormStatus.value = r.status || 'regular';
+          updateResPreview();
+          document.querySelector('[data-tab="tabResults"]').click();
+          showToast("Result loaded for editing.");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // FIXED: Student edit with proper state management
+        window.editStudent = (roll) => {
+          const s = students.find(x => x.roll === roll);
+          if (!s) return;
+          editingStudentRoll = roll;
+          els.stuRoll.value = s.roll;
+          els.stuRoll.disabled = true;
+          els.stuName.value = s.name;
+          els.stuBatch.value = s.batch;
+          document.querySelector('[data-tab="tabStudents"]').click();
+          showToast("Student loaded for editing. Change roll to migrate all results.");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // FIXED: Exam edit with proper state management
+        window.editExam = (id) => {
+          const e = exams.find(x => x.id === id);
+          if (!e) return;
+          editingExamId = id;
+          els.examName.value = e.name;
+          els.examDate.value = e.date;
+          // Ensure batch option exists
+          const batchExists = Array.from(els.examBatch.options).some(opt => opt.value === e.batch);
+          if (!batchExists && e.batch !== 'All') {
+            const newOpt = document.createElement('option');
+            newOpt.value = e.batch;
+            newOpt.textContent = e.batch;
+            els.examBatch.appendChild(newOpt);
+          }
+          els.examBatch.value = e.batch;
+          els.examFullMarks.value = e.fullMarks;
+          els.examPublished.checked = e.published;
+          document.querySelector('[data-tab="tabExams"]').click();
+          showToast("Exam loaded for editing.");
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.deleteResult = async (id) => {
+          if (confirm("Delete this result?")) {
+            showLoading();
+            try {
+              await deleteData('results', id);
+              await loadData();
+              showToast("Result deleted.");
+            } catch (err) {
+              showToast("Error: " + err.message);
+            } finally {
+              hideLoading();
+            }
+          }
+        };
+
+        window.deleteStudent = async (roll) => {
+          if (confirm("Delete student and all their results?")) {
+            showLoading();
+            try {
+              await deleteData('students', roll);
+              const relResults = results.filter(r => r.roll === roll);
+              for (const r of relResults) await deleteData('results', r.id);
+              await loadData();
+              showToast("Student deleted.");
+            } catch (err) {
+              showToast("Error: " + err.message);
+            } finally {
+              hideLoading();
+            }
+          }
+        };
+
+        window.deleteExam = async (id) => {
+          if (confirm("Delete exam and all its results?")) {
+            showLoading();
+            try {
+              await deleteData('exams', id);
+              const relResults = results.filter(r => r.examId === id);
+              for (const r of relResults) await deleteData('results', r.id);
+              await loadData();
+              showToast("Exam deleted.");
+            } catch (err) {
+              showToast("Error: " + err.message);
+            } finally {
+              hideLoading();
+            }
+          }
+        };
+
+        window.toggleExam = async (id) => {
+          showLoading();
+          try {
+            const ex = exams.find(e => e.id === id);
+            if (ex) {
+              ex.published = !ex.published;
+              await saveData('exams', id, ex);
+              await loadData();
+              showToast(`Exam ${ex.published ? 'Published' : 'Unpublished'}`);
+            }
+          } catch (err) {
+            showToast("Error: " + err.message);
+          } finally {
+            hideLoading();
+          }
+        };
+
+        el('excelUpload').addEventListener('change', handleExcelUpload);
+      }
+
+      function updateResPreview() {
+        const ex = exams.find(e => e.id === els.resFormExam.value);
+        const roll = els.resFormRoll.value.trim();
+        const stu = students.find(s => s.roll === roll);
+        const marks = Number(els.resFormMarks.value);
+        const status = els.resFormStatus.value;
+
+        if (!ex || !stu || isNaN(marks)) {
+          els.resPreview.textContent = "Enter details to see preview";
+          return;
+        }
+        if (status === 'absent') {
+          els.resPreview.textContent = `${stu.name} (${stu.batch}) | Status: Absent`;
+          return;
+        }
+        if (status === 'expelled') {
+          els.resPreview.textContent = `${stu.name} (${stu.batch}) | Status: Expelled`;
+          return;
+        }
+
+        const pct = (marks / ex.fullMarks) * 100;
+        const peers = ranked.filter(r => r.examId === ex.id && r.batch === stu.batch && r.roll !== roll && !r.isAbsent && !r.isExpelled);
+        peers.push({ roll, pct });
+        peers.sort((a,b) => b.pct - a.pct || a.roll.localeCompare(b.roll));
+        let rank = 1;
+        let lastPct = -1;
+        peers.forEach((p, idx) => {
+          if (p.pct !== lastPct) rank = idx + 1;
+          lastPct = p.pct;
+        });
+        const myRank = peers.find(p => p.roll === roll);
+
+        els.resPreview.textContent = `${stu.name} (${stu.batch}) | ${pct.toFixed(2)}% | GPA: ${fmtGpa(calcGpa(pct))} | Est. Batch Merit: ${ordinal(myRank ? rank : '-')}`;
+      }
+
+      async function saveData(collection, id, data) {
+        if (fbReady) {
+          await fb.setDoc(fb.doc(db, collection, id), data);
+        } else {
+          const local = JSON.parse(localStorage.getItem(STORE_KEY) || '{"students":[],"exams":[],"results":[]}');
+          local[collection] = local[collection].filter(x => (collection === 'students' ? x.roll : x.id) !== id);
+          local[collection].push(data);
+          localStorage.setItem(STORE_KEY, JSON.stringify(local));
+        }
+      }
+
+      async function deleteData(collection, id) {
+        if (fbReady) {
+          await fb.deleteDoc(fb.doc(db, collection, id));
+        } else {
+          const local = JSON.parse(localStorage.getItem(STORE_KEY) || '{"students":[],"exams":[],"results":[]}');
+          local[collection] = local[collection].filter(x => (collection === 'students' ? x.roll : x.id) !== id);
+          localStorage.setItem(STORE_KEY, JSON.stringify(local));
+        }
+      }
+
+      async function handleExcelUpload(e) {
+        const file = e.target.files[0];
+        if (!file || !window.XLSX) return;
+        showLoading();
+        try {
+          const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+          if (rows.length < 2) {
+            hideLoading();
+            return showToast("Empty file");
+          }
+          
+          const header = rows[0].map(h => String(h).toLowerCase());
+          const rIdx = header.findIndex(h => h.includes('roll'));
+          const nIdx = header.findIndex(h => h.includes('name'));
+          const bIdx = header.findIndex(h => h.includes('batch'));
+
+          const newStus = [];
+          const duplicates = [];
+
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const roll = String(row[rIdx] || "").replace(/\D/g, "").padStart(6, "0");
+            const name = String(row[nIdx] || "").trim();
+            const batch = String(row[bIdx] || "General").trim();
+            
+            if (!/^\d{6}$/.test(roll) || !name || roll === ADMIN_TRIGGER) continue;
+
+            const existing = students.find(s => s.roll === roll);
+            if (existing) {
+              duplicates.push({ roll, candidates: [existing, { roll, name, batch, source: "Excel" }] });
+            } else {
+              newStus.push({ roll, name, batch, updatedAt: new Date().toISOString() });
+            }
+          }
+
+          if (duplicates.length > 0) {
+            hideLoading();
+            showDuplicateModal(duplicates, newStus);
+          } else {
+            for (const s of newStus) await saveData('students', s.roll, s);
+            await loadData();
+            showToast(`${newStus.length} students imported!`);
+          }
+        } catch (err) {
+          showToast("Excel error: " + err.message);
+        } finally {
+          hideLoading();
+          e.target.value = "";
+        }
+      }
+
+      function showDuplicateModal(dups, newStus) {
+        window.pendingDuplicates = dups;
+        window.pendingNew = newStus;
+        els.duplicateContent.innerHTML = dups.map((d, i) => `
+          <div style="margin-bottom:20px;padding:16px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--line);">
+            <b>Roll: ${d.roll}</b>
+            <div style="margin-top:12px;">
+              ${d.candidates.map((c, j) => `
+                <label style="display:flex;align-items:center;gap:10px;margin-bottom:8px;cursor:pointer;padding:8px;border-radius:var(--radius-sm);">
+                  <input type="radio" name="dup_${d.roll}" value="${j}" ${j === d.candidates.length - 1 ? 'checked' : ''}>
+                  <span>${c.name} - ${c.batch} <small style="color:var(--muted)">(${c.source || 'Existing'})</small></span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+        showModal(els.duplicateModal);
+      }
+
+      el('cancelDuplicate').addEventListener('click', () => hideModal(els.duplicateModal));
+      el('confirmDuplicate').addEventListener('click', async () => {
+        showLoading();
+        try {
+          const toSave = [...window.pendingNew];
+          window.pendingDuplicates.forEach(d => {
+            const chosenIdx = document.querySelector(`input[name="dup_${d.roll}"]:checked`).value;
+            toSave.push(d.candidates[chosenIdx]);
+          });
+          for (const s of toSave) await saveData('students', s.roll, s);
+          hideModal(els.duplicateModal);
+          await loadData();
+          showToast("Import completed!");
+        } catch (err) {
+          showToast("Error: " + err.message);
+        } finally {
+          hideLoading();
+        }
+      });
+
+      // FIXED: Toast with proper timeout management
+      function showToast(msg) {
+        const t = el('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          t.classList.remove('show');
+          toastTimeout = null;
+        }, 3000);
+      }
+
+      function printOfficialReportCard() {
+        if (!currentStudentData || !currentLatestResult) return showToast("No result to print.");
+        const s = currentStudentData;
+        const r = currentLatestResult;
+        const overall = batchOverall.find(o => o.roll === s.roll && o.batch === s.batch);
+        const perfPercent = r.isAbsent || r.isExpelled ? 0 : Math.min(r.pct, 100);
+        const perfColor = perfPercent >= 80 ? '#059669' : perfPercent >= 60 ? '#0ea5e9' : perfPercent >= 33 ? '#f59e0b' : '#dc2626';
+
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Report Card - ${s.roll}</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Georgia', serif; color: #1a1a1a; line-height: 1.6; background: #fff; }
+  .page { max-width: 210mm; margin: 0 auto; padding: 15mm; position: relative; }
+  .border-frame { border: 3px double #059669; padding: 8mm; position: relative; }
+  .border-frame::before { content: ""; position: absolute; inset: 3mm; border: 1px solid #059669; pointer-events: none; }
+  .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100px; color: rgba(5, 150, 105, 0.04); font-weight: 900; letter-spacing: 15px; pointer-events: none; z-index: 0; white-space: nowrap; }
+  .header { text-align: center; padding-bottom: 15px; margin-bottom: 20px; border-bottom: 2px solid #059669; position: relative; z-index: 1; }
+  .header-logo { width: 70px; height: 70px; margin: 0 auto 10px; background: linear-gradient(135deg, #059669, #10b981); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: 900; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); font-family: Arial; }
+  .header h1 { font-size: 28px; text-transform: uppercase; letter-spacing: 3px; color: #059669; margin-bottom: 4px; }
+  .header .tagline { font-size: 12px; color: #666; font-style: italic; margin-bottom: 8px; }
+  .header .doc-title { display: inline-block; background: #059669; color: white; padding: 6px 20px; font-size: 14px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-top: 8px; border-radius: 4px; font-family: Arial; }
+  .header .session { font-size: 12px; margin-top: 10px; color: #555; font-family: Arial; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f8faf9; padding: 16px; border: 1px solid #d1ddd8; border-radius: 6px; margin-bottom: 20px; }
+  .info-item { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed #d1ddd8; }
+  .info-item:last-child { border-bottom: none; }
+  .info-item label { font-weight: bold; color: #059669; min-width: 110px; font-family: Arial; font-size: 11px; text-transform: uppercase; }
+  .info-item span { color: #1a1a1a; font-weight: 600; font-size: 14px; }
+  .section-title { background: #059669; color: white; padding: 8px 16px; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-family: Arial; border-radius: 4px 4px 0 0; }
+  .performance-visual { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px; padding: 16px; background: linear-gradient(135deg, #f8faf9, #eef5f1); border: 1px solid #d1ddd8; border-radius: 6px; }
+  .grade-circle { width: 120px; height: 120px; margin: 0 auto; border-radius: 50%; background: ${perfColor}; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 20px ${perfColor}40; }
+  .grade-circle .grade { font-size: 36px; font-weight: 900; line-height: 1; }
+  .grade-circle .gpa { font-size: 14px; margin-top: 4px; font-family: Arial; }
+  .performance-details { display: flex; flex-direction: column; justify-content: center; }
+  .perf-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .perf-label { min-width: 100px; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #666; font-family: Arial; }
+  .perf-bar { flex: 1; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+  .perf-fill { height: 100%; background: ${perfColor}; border-radius: 5px; width: ${perfPercent}%; }
+  .perf-value { min-width: 60px; text-align: right; font-weight: bold; font-size: 13px; }
+  .result-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2px solid #059669; font-size: 13px; }
+  .result-table th { background: #059669; color: white; padding: 10px 12px; text-align: left; font-size: 11px; text-transform: uppercase; font-family: Arial; }
+  .result-table td { padding: 10px 12px; border: 1px solid #d1ddd8; }
+  .result-table tr:nth-child(even) { background: #f8faf9; }
+  .result-table .label-col { font-weight: bold; background: #eef5f1; width: 45%; color: #059669; font-family: Arial; font-size: 12px; }
+  .result-table .value-col { font-weight: 600; text-align: right; }
+  .grade-table { width: 100%; border-collapse: collapse; border: 1.5px solid #059669; font-size: 11px; margin-bottom: 20px; }
+  .grade-table th { background: #eef5f1; padding: 8px; text-align: center; font-size: 10px; border: 1px solid #059669; font-family: Arial; font-weight: bold; text-transform: uppercase; color: #059669; }
+  .grade-table td { padding: 6px 8px; text-align: center; border: 1px solid #d1ddd8; font-size: 12px; }
+  .remarks { margin-bottom: 25px; padding: 14px 16px; border: 1.5px solid #059669; background: #f8faf9; border-radius: 6px; }
+  .remarks h3 { font-size: 12px; margin-bottom: 6px; color: #059669; text-transform: uppercase; letter-spacing: 1px; font-family: Arial; }
+  .remarks p { font-size: 13px; font-style: italic; color: #333; }
+  .signatures { margin-top: 50px; display: flex; justify-content: space-between; }
+  .sig-block { text-align: center; width: 180px; }
+  .sig-line { border-top: 1.5px solid #1a1a1a; margin-bottom: 8px; padding-top: 6px; min-height: 40px; }
+  .sig-block p { font-size: 11px; font-weight: bold; text-transform: uppercase; font-family: Arial; }
+  .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; border-top: 1px solid #d1ddd8; padding-top: 12px; font-family: Arial; }
+  .footer strong { color: #059669; font-size: 11px; }
+  .qr-section { position: absolute; top: 15mm; right: 15mm; width: 60px; height: 60px; border: 2px solid #059669; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8faf9; z-index: 2; }
+  .qr-code { width: 40px; height: 40px; background: linear-gradient(45deg, #059669 25%, transparent 25%), linear-gradient(-45deg, #059669 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #059669 75%), linear-gradient(-45deg, transparent 75%, #059669 75%); background-size: 8px 8px; background-position: 0 0, 0 4px, 4px -4px, -4px 0px; opacity: 0.6; }
+  .qr-label { font-size: 7px; color: #059669; font-weight: bold; margin-top: 2px; font-family: Arial; }
+  .print-btn { position: fixed; top: 20px; right: 20px; padding: 14px 28px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 700; box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4); z-index: 1000; font-family: Arial; }
+  .print-btn:hover { transform: translateY(-2px); }
+  @media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="border-frame">
+    <div class="watermark">IDEAL COACHING</div>
+    <div class="qr-section"><div class="qr-code"></div><div class="qr-label">VERIFY</div></div>
+    <div class="header">
+      <div class="header-logo">IC</div>
+      <h1>Ideal Coaching Centre</h1>
+      <div class="tagline">Nurturing Excellence in Education</div>
+      <div class="doc-title">Academic Report Card</div>
+      <div class="session">Academic Session: ${new Date().getFullYear()} | Issued: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><label>Student Name</label><span>${s.name}</span></div>
+      <div class="info-item"><label>Roll Number</label><span>${s.roll}</span></div>
+      <div class="info-item"><label>Batch / Class</label><span>${s.batch}</span></div>
+      <div class="info-item"><label>Exam Name</label><span>${r.exName}</span></div>
+      <div class="info-item"><label>Exam Date</label><span>${fmtDate(r.exDate)}</span></div>
+      <div class="info-item"><label>Full Marks</label><span>${r.fullMarks}</span></div>
+    </div>
+    <div class="section-title">Academic Performance</div>
+    <div class="performance-visual">
+      <div class="grade-circle">
+        <div class="grade">${r.grade}</div>
+        <div class="gpa">GPA ${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</div>
+      </div>
+      <div class="performance-details">
+        <div class="perf-row">
+          <div class="perf-label">Percentage</div>
+          <div class="perf-bar"><div class="perf-fill"></div></div>
+          <div class="perf-value">${r.isAbsent || r.isExpelled ? '-' : r.pct.toFixed(1) + '%'}</div>
+        </div>
+        <div class="perf-row">
+          <div class="perf-label">Marks</div>
+          <div class="perf-bar"><div class="perf-fill" style="width: ${r.isAbsent || r.isExpelled ? 0 : (r.obtained/r.fullMarks)*100}%;"></div></div>
+          <div class="perf-value">${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : r.obtained + '/' + r.fullMarks}</div>
+        </div>
+        <div class="perf-row">
+          <div class="perf-label">Batch Merit</div>
+          <div class="perf-bar"><div class="perf-fill" style="width: ${r.isAbsent || r.isExpelled ? 0 : Math.max(10, 100 - (r.exBatchMerit * 5))}%;"></div></div>
+          <div class="perf-value">${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</div>
+        </div>
+      </div>
+    </div>
+    <table class="result-table">
+      <thead><tr><th>Evaluation Criteria</th><th style="text-align:right;">Result</th></tr></thead>
+      <tbody>
+        <tr><td class="label-col">Obtained Marks</td><td class="value-col">${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained} / ${r.fullMarks}`}</td></tr>
+        <tr><td class="label-col">Percentage</td><td class="value-col">${r.isAbsent || r.isExpelled ? '-' : r.pct.toFixed(2) + '%'}</td></tr>
+        <tr><td class="label-col">Grade Point (GPA)</td><td class="value-col">${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</td></tr>
+        <tr><td class="label-col">Letter Grade</td><td class="value-col">${r.grade}</td></tr>
+        <tr><td class="label-col">Batch Merit Position</td><td class="value-col">${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</td></tr>
+        ${overall ? `<tr><td class="label-col">Overall Batch Average</td><td class="value-col">${overall.avg.toFixed(2)}%</td></tr>
+        <tr><td class="label-col">Overall Batch Merit</td><td class="value-col">${ordinal(overall.overallMerit)}</td></tr>` : ''}
+      </tbody>
+    </table>
+    <div class="section-title">Grading Scale</div>
+    <table class="grade-table">
+      <thead><tr><th>Marks Range</th><th>Grade</th><th>GPA</th><th>Remark</th></tr></thead>
+      <tbody>
+        <tr><td>80 - 100</td><td><b>A+</b></td><td>5.00</td><td>Outstanding</td></tr>
+        <tr><td>70 - 79</td><td><b>A</b></td><td>4.00</td><td>Excellent</td></tr>
+        <tr><td>60 - 69</td><td><b>A-</b></td><td>3.50</td><td>Very Good</td></tr>
+        <tr><td>50 - 59</td><td><b>B</b></td><td>3.00</td><td>Good</td></tr>
+        <tr><td>40 - 49</td><td><b>C</b></td><td>2.00</td><td>Satisfactory</td></tr>
+        <tr><td>33 - 39</td><td><b>D</b></td><td>1.00</td><td>Pass</td></tr>
+        <tr><td>0 - 32</td><td><b>F</b></td><td>0.00</td><td>Fail</td></tr>
+      </tbody>
+    </table>
+    <div class="remarks">
+      <h3>Teacher's Remarks</h3>
+      <p>${r.pct >= 80 ? 'Outstanding performance! Your dedication is commendable. Keep up the excellent work.' : r.pct >= 70 ? 'Excellent performance! Continue to maintain this standard.' : r.pct >= 60 ? 'Very good performance. With continued effort, you can achieve even better results.' : r.pct >= 50 ? 'Good performance. Focus on weak areas for improvement.' : r.pct >= 33 ? 'Satisfactory. More effort and dedication needed to excel.' : r.isAbsent ? 'Student was absent for this examination.' : r.isExpelled ? 'Student was expelled from this examination.' : 'Needs significant improvement. Additional support recommended.'}</p>
+    </div>
+    <div class="signatures">
+      <div class="sig-block"><div class="sig-line"></div><p>Student</p></div>
+      <div class="sig-block"><div class="sig-line"></div><p>Guardian</p></div>
+      <div class="sig-block"><div class="sig-line"></div><p>Class Teacher</p></div>
+      <div class="sig-block"><div class="sig-line"></div><p>Controller of Exams</p></div>
+    </div>
+    <div class="footer">
+      <p><strong>IDEAL COACHING CENTRE</strong> | Nurturing Excellence in Education</p>
+      <p style="margin-top: 4px;">Computer-generated official document. Document ID: ICC-${s.roll}-${r.examId.slice(-8)}</p>
+    </div>
+  </div>
+</div>
+<button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+</body>
+</html>`;
+        
+        const w = window.open('', '_blank');
+        if (!w) return showToast("Popup blocked. Allow popups.");
+        w.document.write(html);
+        w.document.close();
+      }
+
+      function printSelectedStudentReport() {
+        const roll = els.printStudentSelect.value;
+        if (!roll) return showToast("Select a student.");
+        const stu = students.find(s => s.roll === roll);
+        if (!stu) return showToast("Student not found.");
+        const stuResults = ranked.filter(r => r.roll === roll && r.published).sort((a,b) => new Date(b.exDate) - new Date(a.exDate));
+        const overall = batchOverall.find(o => o.roll === roll && o.batch === stu.batch);
+        if (!stuResults.length) return showToast("No results.");
+        
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Student Report - ${stu.name}</title>
+<style>@page{size:A4;margin:18mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;color:#000;line-height:1.6}.header{text-align:center;border-bottom:3px double #059669;padding-bottom:18px;margin-bottom:24px}.header h1{font-size:28px;text-transform:uppercase;color:#059669}.header .subtitle{font-size:16px;margin-top:6px;font-style:italic}.header .date{font-size:13px;margin-top:10px;color:#555}.info-box{background:#f5f5f5;padding:16px;border:1.5px solid #059669;margin-bottom:24px;border-radius:6px}.info-box h3{font-size:16px;margin-bottom:12px;text-transform:uppercase;color:#059669}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.info-grid div{font-size:14px}.info-grid b{display:inline-block;width:120px}.overall-box{background:#e8f5e9;padding:16px;border:1.5px solid #2e7d32;margin-bottom:24px;border-radius:6px}.overall-box h3{color:#2e7d32;margin-bottom:12px}.overall-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.overall-item{text-align:center}.overall-item .val{font-size:20px;font-weight:bold;color:#2e7d32}.overall-item .lbl{font-size:11px;text-transform:uppercase;color:#555}table{width:100%;border-collapse:collapse;margin-bottom:24px}th{background:#059669;color:white;padding:10px;text-align:center;font-size:12px;text-transform:uppercase}td{padding:10px;text-align:center;border:1px solid #000;font-size:13px}tr:nth-child(even){background:#f9f9f9}.footer{margin-top:40px;text-align:center;font-size:11px;color:#555;border-top:1px solid #ccc;padding-top:12px}.print-btn{position:fixed;top:20px;right:20px;padding:12px 24px;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;z-index:1000}@media print{.print-btn{display:none}}</style></head><body>
+<div class="header"><h1>Ideal Coaching Centre</h1><div class="subtitle">Individual Student Report</div><div class="date">Generated: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+<div class="info-box"><h3>Student Information</h3><div class="info-grid"><div><b>Name:</b> ${stu.name}</div><div><b>Roll:</b> ${stu.roll}</div><div><b>Batch:</b> ${stu.batch}</div><div><b>Total Exams:</b> ${stuResults.length}</div></div></div>
+${overall ? `<div class="overall-box"><h3>Overall Performance</h3><div class="overall-grid"><div class="overall-item"><div class="val">${ordinal(overall.overallMerit)}</div><div class="lbl">Batch Merit</div></div><div class="overall-item"><div class="val">${overall.count}</div><div class="lbl">Exams</div></div><div class="overall-item"><div class="val">${overall.avg.toFixed(2)}%</div><div class="lbl">Average</div></div><div class="overall-item"><div class="val">${fmtGpa(calcGpa(overall.avg))}</div><div class="lbl">GPA</div></div></div></div>` : ''}
+<h3 style="margin-bottom:12px;">Exam History</h3>
+<table><thead><tr><th>Exam</th><th>Date</th><th>Marks</th><th>%</th><th>GPA</th><th>Grade</th><th>Merit</th></tr></thead><tbody>
+${stuResults.map(r => `<tr><td style="text-align:left;font-weight:bold;">${r.exName}</td><td>${fmtDate(r.exDate)}</td><td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks}`}</td><td>${r.isAbsent || r.isExpelled ? '-' : r.pct.toFixed(2) + '%'}</td><td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</td><td>${r.grade}</td><td><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td></tr>`).join('')}
+</tbody></table>
+<div class="footer"><p><strong>Ideal Coaching Centre</strong></p></div>
+<button class="print-btn" onclick="window.print()">🖨️ Print</button></body></html>`;
+        const w = window.open('', '_blank');
+        if (!w) return showToast("Popup blocked.");
+        w.document.write(html);
+        w.document.close();
+      }
+
+      function printSelectedBatchReport() {
+        const batch = els.printBatchSelect.value;
+        if (!batch) return showToast("Select a batch.");
+        const batchStudents = students.filter(s => s.batch === batch);
+        if (!batchStudents.length) return showToast("No students.");
+        const batchResults = ranked.filter(r => r.batch === batch && r.published).sort((a,b) => (a.exBatchMerit || 999) - (b.exBatchMerit || 999) || new Date(b.exDate) - new Date(a.exDate));
+        if (!batchResults.length) return showToast("No results.");
+        
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Batch Report - ${batch}</title>
+<style>@page{size:A4;margin:15mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;color:#000;line-height:1.6}.header{text-align:center;border-bottom:3px double #059669;padding-bottom:18px;margin-bottom:24px}.header h1{font-size:26px;text-transform:uppercase;color:#059669}.header .subtitle{font-size:16px;margin-top:6px;font-style:italic}.header .date{font-size:13px;margin-top:10px;color:#555}.batch-info{background:#e3f2fd;padding:16px;border:1.5px solid #1976d2;margin-bottom:24px;border-radius:6px}.batch-info h3{color:#1976d2;margin-bottom:12px}.batch-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.batch-stat{text-align:center}.batch-stat .val{font-size:22px;font-weight:bold;color:#1976d2}.batch-stat .lbl{font-size:11px;text-transform:uppercase;color:#555}table{width:100%;border-collapse:collapse;margin-bottom:24px}th{background:#1976d2;color:white;padding:10px;text-align:center;font-size:11px;text-transform:uppercase}td{padding:9px 8px;text-align:center;border:1px solid #000;font-size:12px}tr:nth-child(even){background:#f9f9f9}.footer{margin-top:30px;text-align:center;font-size:11px;color:#555;border-top:1px solid #ccc;padding-top:12px}.print-btn{position:fixed;top:20px;right:20px;padding:12px 24px;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;z-index:1000}@media print{.print-btn{display:none}}</style></head><body>
+<div class="header"><h1>Ideal Coaching Centre</h1><div class="subtitle">Batch-wise Report</div><div class="date">Generated: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+<div class="batch-info"><h3>Batch: ${batch}</h3><div class="batch-stats"><div class="batch-stat"><div class="val">${batchStudents.length}</div><div class="lbl">Students</div></div><div class="batch-stat"><div class="val">${batchResults.length}</div><div class="lbl">Results</div></div><div class="batch-stat"><div class="val">${[...new Set(batchResults.map(r => r.examId))].length}</div><div class="lbl">Exams</div></div><div class="batch-stat"><div class="val">${(batchResults.reduce((s,r) => s + r.pct, 0) / batchResults.length).toFixed(1)}%</div><div class="lbl">Avg</div></div></div></div>
+<h3 style="margin-bottom:12px;">All Results</h3>
+<table><thead><tr><th>Roll</th><th>Name</th><th>Exam</th><th>Date</th><th>Marks</th><th>%</th><th>GPA</th><th>Grade</th><th>Merit</th></tr></thead><tbody>
+${batchResults.map(r => `<tr><td><b>${r.roll}</b></td><td style="text-align:left;">${r.stuName}</td><td>${r.exName}</td><td>${fmtDate(r.exDate)}</td><td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks}`}</td><td>${r.isAbsent || r.isExpelled ? '-' : r.pct.toFixed(2) + '%'}</td><td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</td><td>${r.grade}</td><td><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td></tr>`).join('')}
+</tbody></table>
+<div class="footer"><p><strong>Ideal Coaching Centre</strong></p></div>
+<button class="print-btn" onclick="window.print()">🖨️ Print</button></body></html>`;
+        const w = window.open('', '_blank');
+        if (!w) return showToast("Popup blocked.");
+        w.document.write(html);
+        w.document.close();
+      }
+
+      function printSelectedExamReport() {
+        const examId = els.printExamSelect.value;
+        if (!examId) return showToast("Select an exam.");
+        const exam = exams.find(e => e.id === examId);
+        if (!exam) return showToast("Exam not found.");
+        const examResults = ranked.filter(r => r.examId === examId).sort((a,b) => (a.exBatchMerit || 999) - (b.exBatchMerit || 999) || a.roll.localeCompare(b.roll));
+        if (!examResults.length) return showToast("No results.");
+        const regularResults = examResults.filter(r => !r.isAbsent && !r.isExpelled);
+        const avgScore = regularResults.length ? (regularResults.reduce((s,r) => s + r.pct, 0) / regularResults.length) : 0;
+        const passCount = regularResults.filter(r => r.pct >= 33).length;
+        
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Exam Report - ${exam.name}</title>
+<style>@page{size:A4;margin:15mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;color:#000;line-height:1.6}.header{text-align:center;border-bottom:3px double #059669;padding-bottom:18px;margin-bottom:24px}.header h1{font-size:26px;text-transform:uppercase;color:#059669}.header .subtitle{font-size:16px;margin-top:6px;font-style:italic}.header .date{font-size:13px;margin-top:10px;color:#555}.exam-info{background:#fff3e0;padding:16px;border:1.5px solid #f57c00;margin-bottom:24px;border-radius:6px}.exam-info h3{color:#f57c00;margin-bottom:12px}.exam-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.exam-stat{text-align:center}.exam-stat .val{font-size:22px;font-weight:bold;color:#f57c00}.exam-stat .lbl{font-size:11px;text-transform:uppercase;color:#555}table{width:100%;border-collapse:collapse;margin-bottom:24px}th{background:#f57c00;color:white;padding:10px;text-align:center;font-size:11px;text-transform:uppercase}td{padding:9px 8px;text-align:center;border:1px solid #000;font-size:12px}tr:nth-child(even){background:#f9f9f9}.footer{margin-top:30px;text-align:center;font-size:11px;color:#555;border-top:1px solid #ccc;padding-top:12px}.print-btn{position:fixed;top:20px;right:20px;padding:12px 24px;background:#059669;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;z-index:1000}@media print{.print-btn{display:none}}</style></head><body>
+<div class="header"><h1>Ideal Coaching Centre</h1><div class="subtitle">Exam-wise Report</div><div class="date">Generated: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div></div>
+<div class="exam-info"><h3>Exam: ${exam.name}</h3><div class="exam-stats"><div class="exam-stat"><div class="val">${fmtDate(exam.date)}</div><div class="lbl">Date</div></div><div class="exam-stat"><div class="val">${exam.fullMarks}</div><div class="lbl">Full Marks</div></div><div class="exam-stat"><div class="val">${examResults.length}</div><div class="lbl">Students</div></div><div class="exam-stat"><div class="val">${avgScore.toFixed(1)}%</div><div class="lbl">Avg</div></div></div><div style="margin-top:12px;font-size:13px;"><b>Batch:</b> ${exam.batch} | <b>Pass:</b> ${passCount}/${regularResults.length} (${regularResults.length ? ((passCount/regularResults.length)*100).toFixed(1) : 0}%)</div></div>
+<h3 style="margin-bottom:12px;">Results</h3>
+<table><thead><tr><th>Roll</th><th>Name</th><th>Batch</th><th>Status</th><th>Marks</th><th>%</th><th>GPA</th><th>Grade</th><th>Merit</th></tr></thead><tbody>
+${examResults.map(r => `<tr><td><b>${r.roll}</b></td><td style="text-align:left;">${r.stuName}</td><td>${r.batch}</td><td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : 'Regular'}</td><td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks}`}</td><td>${r.isAbsent || r.isExpelled ? '-' : r.pct.toFixed(2) + '%'}</td><td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</td><td>${r.grade}</td><td><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td></tr>`).join('')}
+</tbody></table>
+<div class="footer"><p><strong>Ideal Coaching Centre</strong></p></div>
+<button class="print-btn" onclick="window.print()">🖨️ Print</button></body></html>`;
+        const w = window.open('', '_blank');
+        if (!w) return showToast("Popup blocked.");
+        w.document.write(html);
+        w.document.close();
+      }
+
+      function printFilteredResults() {
+        const txt = els.filterText.value.toLowerCase();
+        const bFilter = els.filterBatch.value;
+        const eFilter = els.filterExam.value;
+        const filtered = ranked.filter(r => {
+          const matchTxt = !txt || [r.roll, r.stuName, r.batch, r.exName].join(' ').toLowerCase().includes(txt);
+          const matchB = !bFilter || r.batch === bFilter;
+          const matchE = !eFilter || r.examId === eFilter;
+          return matchTxt && matchB && matchE;
+        });
+        printGenericReport("Filtered Results", filtered);
+      }
+
+      function printAllStudents() { printGenericReport("All Students Summary", ranked); }
+      function printAllExams() { printGenericReport("All Exams Summary", ranked); }
+
+      function printGenericReport(title, data) {
+        if (!data.length) return showToast("No data.");
+        const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>@page{size:A4;margin:15mm}body{font-family:Arial;color:#000;padding:0}.header{text-align:center;border-bottom:3px double #059669;padding-bottom:15px;margin-bottom:20px}.header h1{font-size:24px;text-transform:uppercase;color:#059669}.header p{font-size:14px;margin-top:8px;color:#555}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #000;padding:8px;text-align:center;font-size:12px}th{background:#059669;color:white;font-weight:bold}tr:nth-child(even){background:#f9f9f9}.footer{margin-top:30px;text-align:center;font-size:11px;color:#555;border-top:1px solid #ccc;padding-top:12px}.print-btn{position:fixed;top:20px;right:20px;padding:10px 20px;background:#059669;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600}@media print{.print-btn{display:none}}</style></head><body>
+<div class="header"><h1>Ideal Coaching Centre</h1><p>${title} | Generated: ${new Date().toLocaleDateString()}</p></div>
+<table><thead><tr><th>Roll</th><th>Name</th><th>Batch</th><th>Exam</th><th>Date</th><th>Marks</th><th>GPA</th><th>Grade</th><th>Merit</th></tr></thead><tbody>
+${data.map(r => `<tr><td>${r.roll}</td><td>${r.stuName}</td><td>${r.batch}</td><td>${r.exName}</td><td>${fmtDate(r.exDate)}</td><td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks}`}</td><td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa)}</td><td>${r.grade}</td><td>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</td></tr>`).join('')}
+</tbody></table>
+<div class="footer"><p><strong>Ideal Coaching Centre</strong></p></div>
+<button class="print-btn" onclick="window.print()">🖨️ Print</button></body></html>`;
+        const w = window.open('', '_blank');
+        if (!w) return showToast("Popup blocked.");
+        w.document.write(html);
+        w.document.close();
+      }
+
+      function exportCsv() {
+        showLoading();
+        try {
+          const data = ranked.map(r => ({
+            Roll: r.roll, Name: r.stuName, Batch: r.batch, Exam: r.exName, Date: r.exDate,
+            Status: r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : 'Regular',
+            Obtained: r.obtained, FullMarks: r.fullMarks, Percentage: r.isAbsent || r.isExpelled ? '' : r.pct.toFixed(2),
+            GPA: r.isAbsent || r.isExpelled ? '' : fmtGpa(r.gpa), Grade: r.grade, BatchMerit: r.isAbsent || r.isExpelled ? '' : r.exBatchMerit
+          }));
+          const ws = XLSX.utils.json_to_sheet(data);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Results");
+          XLSX.writeFile(wb, "Ideal_Coaching_Results.csv");
+          showToast("CSV exported!");
+        } catch (err) {
+          showToast("Export error: " + err.message);
+        } finally {
+          hideLoading();
+        }
+      }
+
+      function showAdmin() {
+        els.studentView.classList.add('hidden');
+        els.adminView.classList.remove('hidden');
+        loadData();
+      }
+      function showStudent() {
+        els.adminView.classList.add('hidden');
+        els.studentView.classList.remove('hidden');
+      }
+      function showAdminLogin() {
+        showModal(els.loginModal);
+        els.loginEmail.focus();
+      }
+
+      function seedData() {
+        if (fbReady || localStorage.getItem(STORE_KEY)) return;
+        localStorage.setItem(STORE_KEY, JSON.stringify({
+          students: [
+            { roll: "100001", name: "Rahim Uddin", batch: "Class 9 - Batch A" },
+            { roll: "100002", name: "Nusrat Jahan", batch: "Class 9 - Batch A" },
+            { roll: "100003", name: "Tanvir Hasan", batch: "Class 10 - Batch B" }
+          ],
+          exams: [
+            { id: "2023-10-01-class9batcha-test1", name: "Monthly Test 1", date: "2023-10-01", batch: "Class 9 - Batch A", fullMarks: 100, published: true },
+            { id: "2023-10-05-all-test1", name: "Model Test 1", date: "2023-10-05", batch: "All", fullMarks: 100, published: true }
+          ],
+          results: [
+            { id: "2023-10-01-class9batcha-test1_100001", examId: "2023-10-01-class9batcha-test1", roll: "100001", obtained: 85, status: "regular" },
+            { id: "2023-10-01-class9batcha-test1_100002", examId: "2023-10-01-class9batcha-test1", roll: "100002", obtained: 72, status: "regular" },
+            { id: "2023-10-05-all-test1_100001", examId: "2023-10-05-all-test1", roll: "100001", obtained: 90, status: "regular" },
+            { id: "2023-10-05-all-test1_100003", examId: "2023-10-05-all-test1", roll: "100003", obtained: 65, status: "regular" }
+          ]
+        }));
+      }
+
+      init();
+    </script>
+  </body>
+</html>
