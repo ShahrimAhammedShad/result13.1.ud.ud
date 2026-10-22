@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#059669" />
     <title>Ideal Coaching Centre | Professional Result Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -124,6 +125,7 @@
         transition: var(--transition);
         position: relative;
         overflow: hidden;
+        flex-shrink: 0;
       }
       .brand-icon::after {
         content: "";
@@ -154,6 +156,7 @@
         padding: 8px 16px; border-radius: 99px; font-size: 0.8rem; font-weight: 700;
         background: var(--warning-light); color: var(--gold); border: 1.5px solid var(--warning);
         display: flex; align-items: center; gap: 6px; transition: var(--transition);
+        flex-shrink: 0;
       }
       .mode-badge::before { 
         content: ""; width: 8px; height: 8px; border-radius: 50%; 
@@ -244,6 +247,7 @@
         font-weight: 600; font-size: 0.95rem;
         transition: var(--transition); border: 1.5px solid transparent; 
         position: relative; overflow: hidden;
+        white-space: nowrap;
       }
       .btn::before {
         content: ""; position: absolute; inset: 0; 
@@ -320,6 +324,7 @@
         animation: scaleIn 0.5s ease-out;
         position: relative;
         overflow: hidden;
+        flex-shrink: 0;
       }
       .score-badge::before {
         content: "";
@@ -361,12 +366,13 @@
         color: var(--muted); text-transform: uppercase; 
         margin-bottom: 8px; letter-spacing: 0.05em; 
       }
-      .metric b { font-size: 1.35rem; font-weight: 800; color: var(--ink); }
+      .metric b { font-size: 1.35rem; font-weight: 800; color: var(--ink); word-break: break-word; }
 
       .table-wrap { 
         overflow-x: auto; border: 1px solid var(--line); 
         border-radius: var(--radius-xl); background: var(--surface); 
         box-shadow: var(--shadow-sm);
+        -webkit-overflow-scrolling: touch;
       }
       table { width: 100%; border-collapse: collapse; min-width: 800px; }
       th, td { 
@@ -377,6 +383,7 @@
         font-size: 0.75rem; font-weight: 700; text-transform: uppercase; 
         color: var(--muted); background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
         letter-spacing: 0.06em; 
+        position: sticky; top: 0; z-index: 1;
       }
       tr:last-child td { border-bottom: 0; }
       tr:hover td { background: var(--primary-soft); }
@@ -411,7 +418,6 @@
         to { opacity: 1; transform: translateY(0); } 
       }
 
-      /* FIXED: Modal system - proper show/hide */
       .modal-backdrop {
         position: fixed; inset: 0; z-index: 50; 
         background: rgba(15, 23, 42, 0.6);
@@ -433,7 +439,7 @@
       .modal-backdrop.show .modal-card { transform: scale(1); }
 
       .toast {
-        position: fixed; bottom: 28px; right: 28px; 
+        position: fixed; bottom: 28px; right: 28px;
         background: linear-gradient(135deg, var(--ink) 0%, #1e293b 100%); 
         color: white;
         padding: 16px 24px; border-radius: var(--radius); 
@@ -490,32 +496,451 @@
         display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;
       }
 
+      /* ========================================
+         RESPONSIVE - TABLET (1024px)
+         ======================================== */
       @media (max-width: 1024px) {
         .grid-2 { grid-template-columns: 360px 1fr; gap: 24px; }
-        .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        .grid-4 { grid-template-columns: repeat(2, 1fr); }
         .stat-box .value { font-size: 1.75rem; }
       }
 
+      /* ========================================
+         RESPONSIVE - MOBILE (768px)
+         ======================================== */
       @media (max-width: 768px) {
-        .app-shell { width: 100%; padding: 16px; }
-        .topbar { padding: 16px 20px; flex-direction: column; align-items: flex-start; gap: 12px; }
-        .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-        .hero-panel { padding: 28px 24px; }
-        .hero-panel h2 { font-size: 1.5rem; }
-        .card-header, .card-body { padding: 20px; }
-        .result-header { flex-direction: column; gap: 20px; }
-        .score-badge { width: 100%; min-height: 120px; }
-        .inline-form { grid-template-columns: 1fr; }
-        .tabs { overflow-x: auto; padding: 4px; }
-        .tab { padding: 10px 14px; font-size: 0.85rem; white-space: nowrap; flex: 0 0 auto; }
-        .print-controls { grid-template-columns: 1fr; }
+        .app-shell { 
+          width: 100%; 
+          padding: 16px;
+          padding-bottom: 60px;
+        }
+        
+        .topbar { 
+          padding: 14px 16px; 
+          flex-direction: row;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 20px;
+          border-radius: var(--radius-lg);
+          position: sticky;
+          top: 0;
+          z-index: 40;
+        }
+        .brand { gap: 12px; flex: 1; min-width: 0; }
+        .brand-icon { 
+          width: 40px; height: 40px; 
+          font-size: 1.05rem; 
+        }
+        .brand-text h1 { 
+          font-size: 1.1rem; 
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .brand-text p { 
+          font-size: 0.7rem; 
+          margin-top: 0;
+        }
+        .mode-badge {
+          padding: 5px 10px;
+          font-size: 0.7rem;
+        }
+        
+        .grid-2, .grid-3, .grid-4 { 
+          grid-template-columns: 1fr; 
+          gap: 16px; 
+        }
+        
+        .hero-panel { 
+          padding: 24px 20px; 
+          border-radius: var(--radius-lg);
+        }
+        .hero-panel h2 { 
+          font-size: 1.35rem; 
+          margin-bottom: 10px;
+        }
+        .hero-panel p { 
+          font-size: 0.9rem;
+        }
+        
+        .card {
+          border-radius: var(--radius-lg);
+        }
+        .card-header { 
+          padding: 16px 18px; 
+        }
+        .card-body { 
+          padding: 18px; 
+        }
+        .card-title { 
+          font-size: 1rem; 
+        }
+        .card-subtitle { 
+          font-size: 0.8rem; 
+        }
+        
+        #resultArea {
+          margin-top: 0;
+        }
+        
+        .result-header {
+          flex-direction: column;
+          gap: 16px;
+          margin-bottom: 20px;
+          padding-bottom: 20px;
+          align-items: stretch;
+        }
+        .result-header > div:first-child {
+          width: 100%;
+        }
+        .result-header h2 {
+          font-size: 1.3rem !important;
+          word-break: break-word;
+        }
+        .result-header p {
+          font-size: 0.85rem !important;
+          word-break: break-word;
+        }
+        
+        .score-badge {
+          width: 100%;
+          min-width: 0;
+          min-height: 110px;
+          padding: 16px;
+        }
+        .score-badge b {
+          font-size: 1.85rem;
+        }
+        .score-badge span {
+          font-size: 0.75rem;
+        }
+        
+        #resMetrics, #overallMetrics {
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 10px !important;
+        }
+        
+        .metric {
+          padding: 14px;
+        }
+        .metric span {
+          font-size: 0.7rem;
+          margin-bottom: 6px;
+        }
+        .metric b {
+          font-size: 1.15rem;
+        }
+        
+        #resultArea .card-body > div[style*="display: flex"] {
+          flex-direction: column !important;
+          gap: 10px !important;
+        }
+        #resultArea .card-body > div[style*="display: flex"] .btn {
+          width: 100%;
+        }
+        
+        .inline-form {
+          grid-template-columns: 1fr;
+        }
+        
+        .tabs { 
+          overflow-x: auto; 
+          padding: 4px;
+          gap: 2px;
+          margin-bottom: 20px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar {
+          display: none;
+        }
+        .tab { 
+          padding: 10px 14px; 
+          font-size: 0.85rem; 
+          white-space: nowrap; 
+          flex: 0 0 auto;
+          min-width: max-content;
+        }
+        
+        .table-wrap {
+          border-radius: var(--radius-lg);
+          margin: 0 -18px;
+          width: calc(100% + 36px);
+        }
+        table {
+          min-width: 700px;
+        }
+        th, td { 
+          padding: 12px 14px; 
+          font-size: 0.85rem; 
+        }
+        
+        .btn { 
+          min-height: 46px; 
+          padding: 0 18px; 
+          font-size: 0.9rem;
+        }
+        .btn-sm { 
+          min-height: 34px; 
+          padding: 0 12px; 
+          font-size: 0.8rem; 
+        }
+        
+        .print-controls { 
+          grid-template-columns: 1fr; 
+        }
+        
+        .print-section {
+          padding: 18px;
+          margin-bottom: 16px;
+        }
+        
+        .stat-box {
+          padding: 18px 14px;
+        }
+        .stat-box .value {
+          font-size: 1.6rem;
+        }
+        .stat-box .label {
+          font-size: 0.72rem;
+        }
+        
+        .toast {
+          left: 16px;
+          right: 16px;
+          bottom: 16px;
+          max-width: none;
+        }
+        
+        .modal-backdrop {
+          padding: 12px;
+        }
+        .modal-card {
+          max-height: 90vh;
+        }
+        
+        input, select {
+          min-height: 46px;
+          font-size: 16px;
+        }
+        
+        .developer-credit {
+          margin-top: 40px;
+          padding: 20px;
+          font-size: 0.85rem;
+        }
       }
 
+      /* ========================================
+         RESPONSIVE - SMALL MOBILE (480px)
+         ======================================== */
       @media (max-width: 480px) {
-        .stat-box { padding: 20px 16px; }
-        .stat-box .value { font-size: 1.5rem; }
-        .metric { padding: 14px; }
-        .metric b { font-size: 1.15rem; }
+        .app-shell {
+          padding: 12px;
+          padding-bottom: 50px;
+        }
+        
+        .topbar {
+          padding: 12px 14px;
+          margin-bottom: 16px;
+        }
+        .brand-icon {
+          width: 36px;
+          height: 36px;
+          font-size: 0.95rem;
+        }
+        .brand-text h1 {
+          font-size: 1rem;
+        }
+        .brand-text p {
+          font-size: 0.65rem;
+        }
+        
+        .hero-panel {
+          padding: 20px 16px;
+        }
+        .hero-panel h2 {
+          font-size: 1.2rem;
+        }
+        .hero-panel p {
+          font-size: 0.85rem;
+        }
+        
+        .card-body {
+          padding: 16px;
+        }
+        .card-header {
+          padding: 14px 16px;
+        }
+        
+        .result-header h2 {
+          font-size: 1.15rem !important;
+        }
+        
+        .score-badge {
+          min-height: 100px;
+        }
+        .score-badge b {
+          font-size: 1.65rem;
+        }
+        
+        #resMetrics, #overallMetrics {
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 8px !important;
+        }
+        
+        .metric {
+          padding: 12px 10px;
+        }
+        .metric span {
+          font-size: 0.65rem;
+        }
+        .metric b {
+          font-size: 1.05rem;
+        }
+        
+        .stat-box {
+          padding: 16px 12px;
+        }
+        .stat-box .value {
+          font-size: 1.4rem;
+        }
+        .stat-box .label {
+          font-size: 0.68rem;
+        }
+        
+        .btn {
+          min-height: 44px;
+          font-size: 0.85rem;
+          padding: 0 14px;
+        }
+        .btn-sm {
+          min-height: 32px;
+          padding: 0 10px;
+          font-size: 0.75rem;
+        }
+        
+        th, td {
+          padding: 10px 12px;
+          font-size: 0.8rem;
+        }
+        
+        .print-section {
+          padding: 14px;
+        }
+        .print-section-title {
+          font-size: 0.9rem;
+        }
+        
+        .developer-credit {
+          padding: 16px;
+          font-size: 0.8rem;
+        }
+      }
+
+      /* ========================================
+         VERY SMALL MOBILE (360px)
+         ======================================== */
+      @media (max-width: 360px) {
+        .brand-text h1 {
+          font-size: 0.9rem;
+        }
+        .brand-text p {
+          display: none;
+        }
+        .mode-badge {
+          font-size: 0.65rem;
+          padding: 4px 8px;
+        }
+        
+        #resMetrics, #overallMetrics {
+          grid-template-columns: 1fr !important;
+        }
+        
+        .hero-panel h2 {
+          font-size: 1.1rem;
+        }
+      }
+
+      /* ========================================
+         LANDSCAPE MOBILE OPTIMIZATION
+         ======================================== */
+      @media (max-height: 500px) and (orientation: landscape) {
+        .topbar {
+          position: relative;
+          padding: 10px 16px;
+        }
+        .hero-panel {
+          padding: 20px;
+        }
+        .hero-panel h2 {
+          font-size: 1.2rem;
+        }
+        .score-badge {
+          min-height: 90px;
+        }
+      }
+
+      /* ========================================
+         TOUCH DEVICE OPTIMIZATIONS
+         ======================================== */
+      @media (hover: none) and (pointer: coarse) {
+        .btn:hover {
+          transform: none;
+        }
+        .card:hover {
+          transform: none;
+        }
+        .metric:hover {
+          transform: none;
+        }
+        .stat-box:hover {
+          transform: none;
+        }
+        
+        .btn {
+          min-height: 48px;
+        }
+        .btn-sm {
+          min-height: 40px;
+          padding: 0 14px;
+        }
+        input, select {
+          min-height: 48px;
+        }
+      }
+
+      /* ========================================
+         SAFE AREA FOR NOTCHED DEVICES
+         ======================================== */
+      @supports (padding: max(0px)) {
+        .app-shell {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+          padding-bottom: max(60px, env(safe-area-inset-bottom));
+        }
+        .toast {
+          bottom: max(16px, env(safe-area-inset-bottom));
+        }
+      }
+
+      /* ========================================
+         PRINT OPTIMIZATION
+         ======================================== */
+      @media print {
+        .topbar, .hero-panel, .developer-credit, .btn, .toast, .loading-overlay {
+          display: none !important;
+        }
+        .app-shell {
+          width: 100%;
+          padding: 0;
+        }
+        .card {
+          box-shadow: none;
+          border: 1px solid #000;
+          break-inside: avoid;
+        }
       }
     </style>
   </head>
@@ -856,7 +1281,7 @@
       const ADMIN_EMAIL = "admin@coaching.local";
       const ADMIN_PASSWORD = "752002";
       const ADMIN_TRIGGER = "112231";
-      const STORE_KEY = "icc_pro_v11";
+      const STORE_KEY = "icc_pro_v12";
 
       let fbReady = false, auth = null, db = null, fb = {};
       let students = [], exams = [], results = [], ranked = [], batchOverall = [];
@@ -899,7 +1324,6 @@
       function showLoading() { els.loadingOverlay.classList.add('show'); }
       function hideLoading() { els.loadingOverlay.classList.remove('show'); }
 
-      // FIXED: Modal show/hide - properly toggle classes
       function showModal(modalEl) {
         modalEl.classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -1017,11 +1441,9 @@
           };
         }).filter(Boolean);
 
-        // FIXED: Handle "All" batch exams properly
         const exBatchGroups = {};
         ranked.forEach(item => {
           if (!item.isAbsent && !item.isExpelled && item.published) {
-            // For "All" batch exams, group by student's batch
             const effectiveBatch = item.exBatch === 'All' ? item.batch : item.exBatch;
             const key = `${item.examId}|${effectiveBatch}`;
             if (!exBatchGroups[key]) exBatchGroups[key] = [];
@@ -1276,6 +1698,13 @@
             <td><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td>
           </tr>
         `).join('') || '<tr><td colspan="6" style="text-align:center;">No history</td></tr>';
+        
+        // Scroll to result area smoothly on mobile
+        if (window.innerWidth <= 768) {
+          setTimeout(() => {
+            els.resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
       }
 
       function bindEvents() {
@@ -1333,7 +1762,6 @@
           }
         });
 
-        // FIXED: Student form with proper edit handling
         els.studentForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           showLoading();
@@ -1346,11 +1774,8 @@
             
             const stu = { roll, name: els.stuName.value.trim(), batch: els.stuBatch.value.trim(), updatedAt: new Date().toISOString() };
             
-            // If editing and roll changed, migrate related results
             if (editingStudentRoll && editingStudentRoll !== roll) {
-              // Delete old student
               await deleteData('students', editingStudentRoll);
-              // Migrate results to new roll
               const relatedResults = results.filter(r => r.roll === editingStudentRoll);
               for (const r of relatedResults) {
                 await deleteData('results', r.id);
@@ -1372,7 +1797,6 @@
           }
         });
 
-        // FIXED: Exam form with proper edit handling - migrate results when exam ID changes
         els.examForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           showLoading();
@@ -1382,10 +1806,7 @@
             const batch = els.examBatch.value;
             const fullMarks = Number(els.examFullMarks.value);
             
-            const newId = `${date}-${batch.replace(/[^a-z0-9]/gi,'')}-${name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}`;
-            
-            // If editing, keep the same ID to preserve results
-            const id = editingExamId || newId;
+            const id = editingExamId || `${date}-${batch.replace(/[^a-z0-9]/gi,'')}-${name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}`;
             
             const ex = { id, name, date, batch, fullMarks, published: els.examPublished.checked, updatedAt: new Date().toISOString() };
             await saveData('exams', id, ex);
@@ -1475,7 +1896,6 @@
           els.loginForm.reset();
         });
 
-        // Close modal on backdrop click
         els.loginModal.addEventListener('click', (e) => {
           if (e.target === els.loginModal) {
             hideModal(els.loginModal);
@@ -1500,7 +1920,6 @@
           window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // FIXED: Student edit with proper state management
         window.editStudent = (roll) => {
           const s = students.find(x => x.roll === roll);
           if (!s) return;
@@ -1510,18 +1929,16 @@
           els.stuName.value = s.name;
           els.stuBatch.value = s.batch;
           document.querySelector('[data-tab="tabStudents"]').click();
-          showToast("Student loaded for editing. Change roll to migrate all results.");
+          showToast("Student loaded for editing.");
           window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // FIXED: Exam edit with proper state management
         window.editExam = (id) => {
           const e = exams.find(x => x.id === id);
           if (!e) return;
           editingExamId = id;
           els.examName.value = e.name;
           els.examDate.value = e.date;
-          // Ensure batch option exists
           const batchExists = Array.from(els.examBatch.options).some(opt => opt.value === e.batch);
           if (!batchExists && e.batch !== 'All') {
             const newOpt = document.createElement('option');
@@ -1753,7 +2170,6 @@
         }
       });
 
-      // FIXED: Toast with proper timeout management
       function showToast(msg) {
         const t = el('toast');
         t.textContent = msg;
