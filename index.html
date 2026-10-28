@@ -61,6 +61,7 @@
         -webkit-font-smoothing: antialiased;
         overflow-x: hidden;
         min-height: 100vh;
+        min-height: 100dvh;
       }
 
       body::before {
@@ -78,11 +79,6 @@
       button { border: 0; cursor: pointer; transition: var(--transition); }
       button:active { transform: scale(0.97); }
 
-      /* FIX: Prevent mobile auto-zoom on input focus */
-      input[type="text"], input[type="number"], input[type="search"], input[type="email"], input[type="password"] {
-        font-size: 16px !important;
-      }
-
       .app-shell { 
         width: min(1320px, calc(100% - 32px)); 
         margin: 0 auto; 
@@ -91,7 +87,6 @@
         z-index: 1;
       }
 
-      /* FIX: Non-intrusive background loading with top progress bar */
       .loading-bar {
         position: fixed; top: 0; left: 0; height: 4px; 
         background: linear-gradient(90deg, var(--primary), var(--accent));
@@ -110,13 +105,13 @@
 
       .loading-overlay {
         position: fixed; inset: 0; z-index: 9998; 
-        background: rgba(255,255,255,0.15); /* Very subtle */
+        background: rgba(255,255,255,0.15);
         backdrop-filter: blur(2px); 
         display: grid; place-items: center;
-        opacity: 0; pointer-events: none; /* Allows interaction while loading */
+        opacity: 0; pointer-events: none;
         transition: opacity 0.3s;
       }
-      .loading-overlay.show { opacity: 1; }
+      .loading-overlay.show { opacity: 1; pointer-events: all; }
       .spinner {
         width: 40px; height: 40px; 
         border: 3px solid var(--line);
@@ -194,6 +189,17 @@
       .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
       .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 
+      .grid-2 > *,
+      .grid-3 > *,
+      .grid-4 > * {
+        min-width: 0;
+      }
+
+      .card,
+      #resultArea {
+        max-width: 100%;
+      }
+
       .card {
         background: var(--surface); 
         border: 1px solid var(--line); 
@@ -252,7 +258,7 @@
         border: 1.5px solid var(--line);
         border-radius: var(--radius); 
         background: var(--surface); color: var(--ink); outline: none;
-        transition: var(--transition); font-size: 16px; /* Fixed to 16px to prevent mobile zoom */
+        transition: var(--transition); font-size: 16px;
       }
       input:hover, select:hover { border-color: var(--line-strong); }
       input:focus, select:focus { 
@@ -519,6 +525,10 @@
         display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: end;
       }
 
+      #resultArea {
+        scroll-margin-top: 90px;
+      }
+
       /* ========================================
          RESPONSIVE - TABLET (1024px)
          ======================================== */
@@ -533,6 +543,10 @@
          RESPONSIVE - MOBILE (768px)
          ======================================== */
       @media (max-width: 768px) {
+        body {
+          background-attachment: scroll;
+        }
+
         .app-shell { 
           width: 100%; 
           padding: 16px;
@@ -571,7 +585,7 @@
         }
         
         .grid-2, .grid-3, .grid-4 { 
-          grid-template-columns: 1fr; 
+          grid-template-columns: minmax(0, 1fr); 
           gap: 16px; 
         }
         
@@ -687,18 +701,70 @@
         }
         
         .table-wrap {
+          margin: 0;
+          width: 100%;
+          max-width: 100%;
           border-radius: var(--radius-lg);
-          margin: 0 -18px;
-          width: calc(100% + 36px);
-        }
-        table {
-          min-width: 700px;
-        }
-        th, td { 
-          padding: 12px 14px; 
-          font-size: 0.85rem; 
         }
         
+        #resultArea table {
+          width: 100%;
+          min-width: 0;
+          table-layout: fixed;
+        }
+
+        #resultArea table thead {
+          display: none;
+        }
+
+        #resultArea table tbody tr {
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
+          margin-bottom: 12px;
+          background: var(--surface);
+          border: 1px solid var(--line);
+          border-radius: var(--radius);
+          overflow: hidden;
+        }
+
+        #resultArea table tbody tr td {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          padding: 12px 16px;
+          border-bottom: 1px solid var(--line);
+        }
+
+        #resultArea table tbody tr td:last-child {
+          border-bottom: none;
+        }
+
+        #resultArea table tbody tr td::before {
+          content: attr(data-label);
+          flex: 0 0 auto;
+          font-weight: 600;
+          color: var(--muted);
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        
+        #resultArea table tbody tr td.empty-state {
+          display: block;
+          text-align: center;
+          padding: 24px;
+          color: var(--muted);
+        }
+        
+        #resultArea table tbody tr td.empty-state::before {
+          content: none;
+        }
+
         .btn { 
           min-height: 46px; 
           padding: 0 18px; 
@@ -745,7 +811,7 @@
         
         input, select {
           min-height: 46px;
-          font-size: 16px !important; /* Enforced 16px to prevent zoom */
+          font-size: 16px !important;
         }
         
         .developer-credit {
@@ -939,8 +1005,8 @@
          ======================================== */
       @supports (padding: max(0px)) {
         .app-shell {
-          padding-left: max(16px, env(safe-area-inset-left));
-          padding-right: max(16px, env(safe-area-inset-right));
+          padding-left: max(12px, env(safe-area-inset-left));
+          padding-right: max(12px, env(safe-area-inset-right));
           padding-bottom: max(60px, env(safe-area-inset-bottom));
         }
         .toast {
@@ -968,7 +1034,6 @@
     </style>
   </head>
   <body>
-    <!-- FIX: Added top progress bar for background loading -->
     <div id="loadingBar" class="loading-bar"></div>
     <div id="loadingOverlay" class="loading-overlay">
       <div class="spinner"></div>
@@ -1097,7 +1162,6 @@
                   <div><label>Exam</label><select id="resFormExam" required></select></div>
                   <div><label>Roll Number</label><input id="resFormRoll" type="text" maxlength="6" pattern="[0-9]{6}" required /></div>
                   <div><label>Student Name</label><input id="resFormName" type="text" readonly /></div>
-                  <!-- FIX: Added step="0.01" to allow decimal/point marks -->
                   <div><label>Marks</label><input id="resFormMarks" type="number" min="0" step="0.01" value="0" required /></div>
                   <div><label>Status</label>
                     <select id="resFormStatus">
@@ -1317,6 +1381,8 @@
       let editingStudentRoll = null;
       let editingExamId = null;
       let toastTimeout = null;
+      let dataLoaded = false;
+      let isProcessing = false;
 
       const el = (id) => document.getElementById(id);
       const els = {
@@ -1345,16 +1411,16 @@
         printBatchSelect: el('printBatchSelect'),
         printExamSelect: el('printExamSelect'),
         loadingOverlay: el('loadingOverlay'),
-        loadingBar: el('loadingBar') // FIX: Added loading bar reference
+        loadingBar: el('loadingBar')
       };
 
-      function showLoading() { 
-        els.loadingOverlay.classList.add('show'); 
-        els.loadingBar.classList.add('show'); // FIX: Show top progress bar
+      function showLoading(blockUI = true) {
+        els.loadingBar.classList.add('show');
+        if (blockUI) els.loadingOverlay.classList.add('show');
       }
-      function hideLoading() { 
-        els.loadingOverlay.classList.remove('show'); 
-        els.loadingBar.classList.remove('show'); 
+      function hideLoading() {
+        els.loadingBar.classList.remove('show');
+        els.loadingOverlay.classList.remove('show');
       }
 
       function showModal(modalEl) {
@@ -1385,7 +1451,7 @@
         await setupFirebase();
         seedData();
         bindEvents();
-        await loadData();
+        await loadData(true);
         checkUrlParams();
       }
 
@@ -1424,8 +1490,10 @@
         }
       }
 
-      async function loadData() {
-        showLoading();
+      async function loadData(blockUI = true) {
+        if (dataLoaded) return;
+        
+        showLoading(blockUI);
         try {
           if (fbReady) {
             const [s, e, r] = await Promise.all([
@@ -1449,6 +1517,7 @@
           processRanking();
           updateDropdowns();
           renderAll();
+          dataLoaded = true;
         } catch (err) {
           showToast("Data load error: " + err.message);
         } finally {
@@ -1528,8 +1597,10 @@
       function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'; }
 
       function renderAll() {
-        renderAdminStats();
-        renderCharts();
+        if (!els.adminView.classList.contains('hidden')) {
+          renderAdminStats();
+          renderCharts();
+        }
         renderResultsTable();
         renderStudentsTable();
         renderExamsTable();
@@ -1658,7 +1729,6 @@
         els.filterExam.innerHTML = eOpts;
         els.resFormExam.innerHTML = eOpts.replace('All Exams', 'Select Exam');
 
-        // FIX: Remember last selected exam for fast data entry
         const lastExam = localStorage.getItem('icc_last_exam_id');
         if (lastExam && els.resFormExam.querySelector(`option[value="${lastExam}"]`)) {
           els.resFormExam.value = lastExam;
@@ -1687,7 +1757,7 @@
           els.resMarks.textContent = "-";
           els.resMetrics.innerHTML = '';
           els.overallMetrics.innerHTML = '';
-          els.historyBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No data</td></tr>';
+          els.historyBody.innerHTML = '<tr><td colspan="6" class="empty-state" style="text-align:center;">No data</td></tr>';
           currentStudentData = null;
           return;
         }
@@ -1727,16 +1797,16 @@
           els.overallMetrics.innerHTML = '<div class="metric" style="grid-column:1/-1;text-align:center;">No ranked data available.</div>';
         }
 
-        els.historyBody.innerHTML = pubResults.map(r => `
+        els.historyBody.innerHTML = pubResults.length ? pubResults.map(r => `
           <tr>
-            <td><b>${r.exName}</b></td>
-            <td>${fmtDate(r.exDate)}</td>
-            <td>${r.batch}</td>
-            <td>${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks} (${r.pct.toFixed(1)}%)`}</td>
-            <td>${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa) + ' (' + r.grade + ')'}</td>
-            <td><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td>
+            <td data-label="Exam"><b>${r.exName}</b></td>
+            <td data-label="Date">${fmtDate(r.exDate)}</td>
+            <td data-label="Batch">${r.batch}</td>
+            <td data-label="Marks">${r.isAbsent ? 'Absent' : r.isExpelled ? 'Expelled' : `${r.obtained}/${r.fullMarks} (${r.pct.toFixed(1)}%)`}</td>
+            <td data-label="GPA">${r.isAbsent || r.isExpelled ? '-' : fmtGpa(r.gpa) + ' (' + r.grade + ')'}</td>
+            <td data-label="Merit"><b>${r.isAbsent || r.isExpelled ? '-' : ordinal(r.exBatchMerit)}</b></td>
           </tr>
-        `).join('') || '<tr><td colspan="6" style="text-align:center;">No history</td></tr>';
+        `).join('') : '<tr><td colspan="6" class="empty-state" style="text-align:center;">No history</td></tr>';
         
         if (window.innerWidth <= 768) {
           setTimeout(() => {
@@ -1746,7 +1816,7 @@
       }
 
       function bindEvents() {
-        els.searchForm.addEventListener('submit', (e) => {
+        els.searchForm.addEventListener('submit', async (e) => {
           e.preventDefault();
           const roll = els.studentRoll.value.trim();
           if (!/^\d{6}$/.test(roll)) return showToast("Roll must be exactly 6 digits.");
@@ -1754,10 +1824,14 @@
             els.studentRoll.value = '';
             return showAdminLogin();
           }
-          loadData().then(() => renderStudentPortal(roll));
+          showLoading(false);
+          if (!dataLoaded) {
+            await loadData(false);
+          }
+          renderStudentPortal(roll);
+          hideLoading();
         });
 
-        // FIX: Auto-focus to marks field when 6 digits are entered
         els.resFormRoll.addEventListener('input', (e) => {
           let val = e.target.value.replace(/\D/g, '').slice(0, 6);
           e.target.value = val;
@@ -1773,7 +1847,6 @@
         [els.resFormExam, els.resFormStatus].forEach(el => el.addEventListener('change', updateResPreview));
         els.resFormMarks.addEventListener('input', updateResPreview);
         
-        // FIX: Submit form on Enter key in marks field
         els.resFormMarks.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -1782,8 +1855,10 @@
         });
 
         els.resultForm.addEventListener('submit', async (e) => {
+          if (isProcessing) return;
+          isProcessing = true;
           e.preventDefault();
-          showLoading();
+          showLoading(false);
           try {
             const exId = els.resFormExam.value;
             const roll = els.resFormRoll.value.trim();
@@ -1791,6 +1866,7 @@
             const ex = exams.find(e => e.id === exId);
             if (!stu || !ex) {
               hideLoading();
+              isProcessing = false;
               return showToast("Invalid Roll or Exam.");
             }
             
@@ -1799,38 +1875,42 @@
             
             if (status === 'regular' && (obtained < 0 || obtained > ex.fullMarks)) {
               hideLoading();
+              isProcessing = false;
               return showToast(`Marks must be 0-${ex.fullMarks}`);
             }
 
             const res = { id: `${exId}_${roll}`, examId: exId, roll, obtained, status, updatedAt: new Date().toISOString() };
             await saveData('results', res.id, res);
             
-            // FIX: Save last selected exam to localStorage for fast repeated entry
             localStorage.setItem('icc_last_exam_id', exId);
             
             els.resultForm.reset();
             els.resFormName.value = '';
             els.resPreview.textContent = 'Enter details to see preview';
-            // Restore the exam selection after reset
             els.resFormExam.value = exId;
             
-            await loadData();
+            dataLoaded = false;
+            await loadData(false);
             showToast("Result saved successfully!");
-            els.resFormRoll.focus(); // Ready for next entry
+            els.resFormRoll.focus();
           } catch (err) {
             showToast("Error: " + err.message);
           } finally {
             hideLoading();
+            isProcessing = false;
           }
         });
 
         els.studentForm.addEventListener('submit', async (e) => {
+          if (isProcessing) return;
+          isProcessing = true;
           e.preventDefault();
-          showLoading();
+          showLoading(false);
           try {
             const roll = els.stuRoll.value.trim();
             if (!/^\d{6}$/.test(roll) || roll === ADMIN_TRIGGER) {
               hideLoading();
+              isProcessing = false;
               return showToast("Invalid or reserved roll number.");
             }
             
@@ -1850,18 +1930,23 @@
             editingStudentRoll = null;
             els.studentForm.reset();
             els.stuRoll.disabled = false;
-            await loadData();
+            
+            dataLoaded = false;
+            await loadData(false);
             showToast("Student saved successfully!");
           } catch (err) {
             showToast("Error: " + err.message);
           } finally {
             hideLoading();
+            isProcessing = false;
           }
         });
 
         els.examForm.addEventListener('submit', async (e) => {
+          if (isProcessing) return;
+          isProcessing = true;
           e.preventDefault();
-          showLoading();
+          showLoading(false);
           try {
             const name = els.examName.value.trim();
             const date = els.examDate.value;
@@ -1876,12 +1961,15 @@
             editingExamId = null;
             els.examForm.reset();
             els.examDate.value = new Date().toISOString().split('T')[0];
-            await loadData();
+            
+            dataLoaded = false;
+            await loadData(false);
             showToast("Exam saved successfully!");
           } catch (err) {
             showToast("Error: " + err.message);
           } finally {
             hideLoading();
+            isProcessing = false;
           }
         });
 
@@ -1912,7 +2000,7 @@
         el('printExamBtn').addEventListener('click', printSelectedExamReport);
         
         el('adminLogoutBtn').addEventListener('click', async () => {
-          showLoading();
+          showLoading(true);
           try {
             if (fbReady) await fb.signOut(auth);
             showStudent();
@@ -1926,7 +2014,7 @@
 
         els.loginForm.addEventListener('submit', async (e) => {
           e.preventDefault();
-          showLoading();
+          showLoading(true);
           const email = els.loginEmail.value.trim();
           const pass = els.loginPassword.value;
           
@@ -2018,67 +2106,83 @@
 
         window.deleteResult = async (id) => {
           if (confirm("Delete this result?")) {
-            showLoading();
+            if (isProcessing) return;
+            isProcessing = true;
+            showLoading(false);
             try {
               await deleteData('results', id);
-              await loadData();
+              dataLoaded = false;
+              await loadData(false);
               showToast("Result deleted.");
             } catch (err) {
               showToast("Error: " + err.message);
             } finally {
               hideLoading();
+              isProcessing = false;
             }
           }
         };
 
         window.deleteStudent = async (roll) => {
           if (confirm("Delete student and all their results?")) {
-            showLoading();
+            if (isProcessing) return;
+            isProcessing = true;
+            showLoading(false);
             try {
               await deleteData('students', roll);
               const relResults = results.filter(r => r.roll === roll);
               for (const r of relResults) await deleteData('results', r.id);
-              await loadData();
+              dataLoaded = false;
+              await loadData(false);
               showToast("Student deleted.");
             } catch (err) {
               showToast("Error: " + err.message);
             } finally {
               hideLoading();
+              isProcessing = false;
             }
           }
         };
 
         window.deleteExam = async (id) => {
           if (confirm("Delete exam and all its results?")) {
-            showLoading();
+            if (isProcessing) return;
+            isProcessing = true;
+            showLoading(false);
             try {
               await deleteData('exams', id);
               const relResults = results.filter(r => r.examId === id);
               for (const r of relResults) await deleteData('results', r.id);
-              await loadData();
+              dataLoaded = false;
+              await loadData(false);
               showToast("Exam deleted.");
             } catch (err) {
               showToast("Error: " + err.message);
             } finally {
               hideLoading();
+              isProcessing = false;
             }
           }
         };
 
         window.toggleExam = async (id) => {
-          showLoading();
+          if (isProcessing) return;
+          isProcessing = true;
+          showLoading(false);
           try {
             const ex = exams.find(e => e.id === id);
             if (ex) {
               ex.published = !ex.published;
               await saveData('exams', id, ex);
-              await loadData();
+              dataLoaded = false;
+              await loadData(false);
               showToast(`Exam ${ex.published ? 'Published' : 'Unpublished'}`);
             }
           } catch (err) {
             showToast("Error: " + err.message);
           } finally {
             hideLoading();
+            isProcessing = false;
           }
         };
 
@@ -2142,14 +2246,20 @@
       }
 
       async function handleExcelUpload(e) {
+        if (isProcessing) return;
+        isProcessing = true;
         const file = e.target.files[0];
-        if (!file || !window.XLSX) return;
-        showLoading();
+        if (!file || !window.XLSX) {
+          isProcessing = false;
+          return;
+        }
+        showLoading(false);
         try {
           const wb = XLSX.read(await file.arrayBuffer(), { type: "array" });
           const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
           if (rows.length < 2) {
             hideLoading();
+            isProcessing = false;
             return showToast("Empty file");
           }
           
@@ -2180,15 +2290,20 @@
           if (duplicates.length > 0) {
             hideLoading();
             showDuplicateModal(duplicates, newStus);
+            isProcessing = false;
           } else {
             for (const s of newStus) await saveData('students', s.roll, s);
-            await loadData();
+            dataLoaded = false;
+            await loadData(false);
             showToast(`${newStus.length} students imported!`);
+            hideLoading();
+            isProcessing = false;
           }
         } catch (err) {
           showToast("Excel error: " + err.message);
-        } finally {
           hideLoading();
+          isProcessing = false;
+        } finally {
           e.target.value = "";
         }
       }
@@ -2214,7 +2329,9 @@
 
       el('cancelDuplicate').addEventListener('click', () => hideModal(els.duplicateModal));
       el('confirmDuplicate').addEventListener('click', async () => {
-        showLoading();
+        if (isProcessing) return;
+        isProcessing = true;
+        showLoading(false);
         try {
           const toSave = [...window.pendingNew];
           window.pendingDuplicates.forEach(d => {
@@ -2223,12 +2340,14 @@
           });
           for (const s of toSave) await saveData('students', s.roll, s);
           hideModal(els.duplicateModal);
-          await loadData();
+          dataLoaded = false;
+          await loadData(false);
           showToast("Import completed!");
         } catch (err) {
           showToast("Error: " + err.message);
         } finally {
           hideLoading();
+          isProcessing = false;
         }
       });
 
@@ -2517,7 +2636,9 @@ ${data.map(r => `<tr><td>${r.roll}</td><td>${r.stuName}</td><td>${r.batch}</td><
       }
 
       function exportCsv() {
-        showLoading();
+        if (isProcessing) return;
+        isProcessing = true;
+        showLoading(false);
         try {
           const data = ranked.map(r => ({
             Roll: r.roll, Name: r.stuName, Batch: r.batch, Exam: r.exName, Date: r.exDate,
@@ -2534,13 +2655,14 @@ ${data.map(r => `<tr><td>${r.roll}</td><td>${r.stuName}</td><td>${r.batch}</td><
           showToast("Export error: " + err.message);
         } finally {
           hideLoading();
+          isProcessing = false;
         }
       }
 
       function showAdmin() {
         els.studentView.classList.add('hidden');
         els.adminView.classList.remove('hidden');
-        loadData();
+        loadData(true);
       }
       function showStudent() {
         els.adminView.classList.add('hidden');
